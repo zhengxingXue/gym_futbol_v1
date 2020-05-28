@@ -11,7 +11,7 @@ class Ball(Object):
 
     def has_contact_with(self, player):
         """
-        return true if the ball and the player has contact.
+        check if the ball and the player has contact.
         """
         return self.shape.shapes_collide(player.shape).points != []
 
