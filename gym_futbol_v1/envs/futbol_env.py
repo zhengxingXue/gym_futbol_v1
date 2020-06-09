@@ -1,6 +1,8 @@
 import random
 import math
 import gym
+import io
+import cv2
 
 from gym import error, spaces, utils
 from gym.utils import seeding
@@ -42,6 +44,11 @@ class Futbol(gym.Env):
     Arrow key controls the player action direction.
     Action key contorls the action one player take at the moment. 
     """
+
+    metadata = {
+        'render.modes': ['human', 'rgb_array'],
+        'video.frames_per_second': 10
+    }
 
     WIDTH = 105   # [m]
     HEIGHT = 68   # [m]
@@ -143,14 +150,28 @@ class Futbol(gym.Env):
         self._position_to_initial()
         return self._get_observation()
 
-    def render(self):
+    def render(self, mode='human'):
         padding = 5
+        fig = plt.figure()
+        ax = fig.add_subplot()
         ax = plt.axes(xlim=(0 - padding, self.WIDTH + padding),
                       ylim=(0 - padding, self.HEIGHT + padding))
         ax.set_aspect("equal")
         o = pymunk.matplotlib_util.DrawOptions(ax)
         self.space.debug_draw(o)
-        plt.show()
+        if mode == 'human':
+            plt.show()
+        elif mode == 'rgb_array':
+            dpi = 180
+            buf = io.BytesIO()
+            fig.savefig(buf, format="png", dpi=dpi)
+            buf.seek(0)
+            img_arr = np.frombuffer(buf.getvalue(), dtype=np.uint8)
+            buf.close()
+            img = cv2.imdecode(img_arr, 1)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            plt.close()
+            return img
 
     def _get_observation(self):
         """normalized observation"""
