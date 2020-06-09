@@ -1,9 +1,13 @@
-import pymunk
-from pymunk.vec2d import Vec2d
+"""
+Player Module.
+"""
 from .object import Object
 
 
 class Player(Object):
+    """
+    Player Class.
+    """
 
     def __init__(self, space, x, y, mass=20, radius=1.5, max_velocity=10,
                  elasticity=0.2, color=(1, 0, 0, 1), side="left"):

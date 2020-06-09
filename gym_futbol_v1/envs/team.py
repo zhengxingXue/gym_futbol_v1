@@ -1,8 +1,9 @@
-import pymunk
-from pymunk.vec2d import Vec2d
-from .player import Player
-import numpy as np
+"""
+Team Module.
+"""
 import random
+import numpy as np
+from .player import Player
 
 
 class Team():

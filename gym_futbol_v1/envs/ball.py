@@ -1,5 +1,6 @@
-import pymunk
-from pymunk.vec2d import Vec2d
+"""
+ball Module.
+"""
 from .object import Object
 
 

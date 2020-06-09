@@ -1,21 +1,18 @@
+"""
+Env Module.
+"""
 import random
 import math
-import gym
 import io
 import cv2
-
-from gym import error, spaces, utils
-from gym.utils import seeding
-
-from .player import Player
-from .ball import Ball
-from .team import Team
-
+import gym
+from gym import spaces
 import numpy as np
 import pymunk
-from pymunk.vec2d import Vec2d
 import pymunk.matplotlib_util
 import matplotlib.pyplot as plt
+from .ball import Ball
+from .team import Team
 
 
 def get_vec(coor_t, coor_o):
