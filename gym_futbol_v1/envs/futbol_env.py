@@ -81,8 +81,8 @@ class Futbol(gym.Env):
                 dtype=np.float32)
         else:
             self.observation_space = spaces.Box(
-                low=np.array([0 - 3, 0, -self.BALL_MAX_VELOCITY, -self.BALL_MAX_VELOCITY] +
-                             [0 - 3, 0, -self.PLAYER_MAX_VELOCITY, -self.PLAYER_MAX_VELOCITY] *
+                low=np.array([-3, 0, -self.BALL_MAX_VELOCITY, -self.BALL_MAX_VELOCITY] +
+                             [-3, 0, -self.PLAYER_MAX_VELOCITY, -self.PLAYER_MAX_VELOCITY] *
                              (self.number_of_player * 2), dtype=np.float32),
                 high=np.array([self.WIDTH + 3, self.HEIGHT, self.BALL_MAX_VELOCITY, self.BALL_MAX_VELOCITY] +
                               [self.WIDTH + 3, self.HEIGHT, self.PLAYER_MAX_VELOCITY, self.PLAYER_MAX_VELOCITY] *
