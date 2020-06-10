@@ -17,7 +17,7 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
-    show_video('videos/ppo2-futbol-pre-step-0-to-step-50.mp4')
+    main()
+    # show_video('videos/ppo2-futbol-pre-step-0-to-step-50.mp4')
 
 

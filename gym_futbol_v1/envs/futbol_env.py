@@ -22,7 +22,7 @@ class Futbol(gym.Env):
     Futbol is a 2D simulation of real world soccer.
     Soccer is a team sport played with a spherical ball between two teams of 11 players,
     including a goalkeeper. The goal is to get the ball into the net. For this simulation,
-    user can specifiy the player number and the goalkeeper is not implemented for now.
+    user can specify the player number and the goalkeeper is not implemented for now.
 
     **STATE:**
     The state consists of position and velocity of each player and the ball.
@@ -31,7 +31,7 @@ class Futbol(gym.Env):
     **ACTIONS:**
     The action consists of arrow key and action key, inspired by PES2020.
     Arrow key controls the player action direction.
-    Action key contorls the action one player take at the moment.
+    Action key controls the action one player take at the moment.
     """
 
     metadata = {
