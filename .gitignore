@@ -140,3 +140,6 @@ dmypy.json
 
 # Windows
 Thumbs.db
+
+# videos folder
+videos/
