@@ -7,6 +7,9 @@ from .object import Player
 
 
 class Team():
+    """
+    Team Class.
+    """
 
     def __init__(self, space, width, height, player_weight,
                  player_max_velocity, color=(1, 0, 0, 1), side="left",
@@ -51,7 +54,7 @@ class Team():
                 self.color_array = [color] * player_number
 
     def _create_pos_array(self, player_number, side, width, height):
-        # implement for 3 players and fewer now
+        # implement for 10 players and fewer now
         if player_number <= 3:
             # get x position for each player
             if side == "left":

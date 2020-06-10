@@ -6,6 +6,9 @@ from pymunk.vec2d import Vec2d
 
 
 class Object():
+    """
+    Pymunk object Class.
+    """
 
     def __init__(self, space, x, y, mass, radius, max_velocity, elasticity, color):
         self.space = space
@@ -70,6 +73,9 @@ class Player(Object):
 
 
 class Ball(Object):
+    """
+    Ball Class.
+    """
 
     def __init__(self, space, x, y, mass=10, radius=1, max_velocity=20,
                  elasticity=0.2, color=(0, 1, 0, 1)):
