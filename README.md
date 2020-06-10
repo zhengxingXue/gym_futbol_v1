@@ -20,7 +20,7 @@ The simulation is recorded and showed in the pop up window. The video file is sa
 
 ![](supplement/ppo2-futbol-pre-train.gif)
 
-<img src="supplement/ppo2-futbol-pre-train.gif" width="40" height="40" />
+<img src="supplement/ppo2-futbol-pre-train.gif" width="500" height="500" />
 
 ## Env
 
