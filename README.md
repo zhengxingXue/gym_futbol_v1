@@ -18,6 +18,8 @@ $ python main.py
 ```
 The simulation is recorded and showed in the pop up window. The video file is saved in ``videos/`` directory.
 
+![](supplement/ppo2-futbol-pre-train.gif)
+
 ## Env
 
 To create the ``futbol`` environment:
