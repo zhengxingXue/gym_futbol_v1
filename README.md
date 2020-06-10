@@ -12,7 +12,7 @@ $ cd gym_futbol_v1
 $ pip install -e .
 ```
 
-To try the environment with random players:
+To try the environment with PPO2 agent (without any training):
 ```
 $ python main.py
 ```

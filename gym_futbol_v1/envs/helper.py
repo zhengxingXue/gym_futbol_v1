@@ -2,6 +2,7 @@
 contain helper function for futbol_env
 """
 import math
+import enum
 import pymunk
 import numpy as np
 
@@ -11,7 +12,7 @@ def get_vec(coor_t, coor_o):
     get the vector pointing from [coor2] to [coor1] and its magnitude
     """
     vec = [coor_t[0] - coor_o[0], coor_t[1] - coor_o[1]]
-    vec_mag = math.sqrt(vec[0]**2 + vec[1]**2)
+    vec_mag = math.sqrt(vec[0] ** 2 + vec[1] ** 2)
     return vec, vec_mag
 
 
@@ -22,19 +23,19 @@ def setup_walls(space, width, height, goal_size):
     static = [
         pymunk.Segment(
             space.static_body,
-            (0, 0), (0, height/2 - goal_size/2), 1),
+            (0, 0), (0, height / 2 - goal_size / 2), 1),
         pymunk.Segment(
             space.static_body,
-            (0, height/2 + goal_size/2), (0, height), 1),
+            (0, height / 2 + goal_size / 2), (0, height), 1),
         pymunk.Segment(
             space.static_body,
             (0, height), (width, height), 1),
         pymunk.Segment(
             space.static_body,
-            (width, 0), (width, height/2 - goal_size/2), 1),
+            (width, 0), (width, height / 2 - goal_size / 2), 1),
         pymunk.Segment(
             space.static_body,
-            (width, height/2 + goal_size/2), (width, height), 1),
+            (width, height / 2 + goal_size / 2), (width, height), 1),
         pymunk.Segment(
             space.static_body,
             (0, 0), (width, 0), 1)
@@ -43,22 +44,22 @@ def setup_walls(space, width, height, goal_size):
     static_goal = [
         pymunk.Segment(
             space.static_body,
-            (-2, height/2 - goal_size/2), (-2, height/2 + goal_size/2), 1),
+            (-2, height / 2 - goal_size / 2), (-2, height / 2 + goal_size / 2), 1),
         pymunk.Segment(
             space.static_body,
-            (-2, height/2 - goal_size/2), (0, height/2 - goal_size/2), 1),
+            (-2, height / 2 - goal_size / 2), (0, height / 2 - goal_size / 2), 1),
         pymunk.Segment(
             space.static_body,
-            (-2, height/2 + goal_size/2), (0, height/2 + goal_size/2), 1),
+            (-2, height / 2 + goal_size / 2), (0, height / 2 + goal_size / 2), 1),
         pymunk.Segment(
             space.static_body,
-            (width+2, height/2 - goal_size/2), (width+2, height/2 + goal_size/2), 1),
+            (width + 2, height / 2 - goal_size / 2), (width + 2, height / 2 + goal_size / 2), 1),
         pymunk.Segment(
             space.static_body,
-            (width, height/2 - goal_size/2), (width+2, height/2 - goal_size/2), 1),
+            (width, height / 2 - goal_size / 2), (width + 2, height / 2 - goal_size / 2), 1),
         pymunk.Segment(
             space.static_body,
-            (width, height/2 + goal_size/2), (width+2, height/2 + goal_size/2), 1)
+            (width, height / 2 + goal_size / 2), (width + 2, height / 2 + goal_size / 2), 1)
     ]
 
     for s in static + static_goal:
@@ -78,3 +79,8 @@ def normalize_array(array, array_max, array_min, n=1):
     array_range = np.tile((array_max - array_min) / 2, n)
     array = (array - array_avg) / array_range
     return array
+
+
+class Side(enum.Enum):
+    left = 'left'
+    right = 'right'

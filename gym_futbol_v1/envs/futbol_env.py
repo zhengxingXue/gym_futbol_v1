@@ -55,11 +55,12 @@ class Futbol(gym.Env):
     PLAYER_FORCE_LIMIT = 40
     BALL_FORCE_LIMIT = 120
 
-    def __init__(self, debug=False, number_of_player=2, normalize_obs=True):
+    def __init__(self, debug=False, number_of_player=2, normalize_obs=True, goal_end=True):
 
         self.debug = debug
         self.number_of_player = number_of_player
         self.normalize_obs = normalize_obs
+        self.goal_end = goal_end
 
         # action space
         # 1) Arrow Keys: Discrete 5  - NOOP[0], UP[1], RIGHT[2], DOWN[3], LEFT[4]  - params: min: 0, max: 4
@@ -263,8 +264,6 @@ class Futbol(gym.Env):
         else:
             pass
 
-    def random_action(self): return self.action_space.sample()
-
     def _process_action(self, player, action):
         # Arrow Keys: NOOP
         if action[0] == 0:
@@ -380,7 +379,7 @@ class Futbol(gym.Env):
             print("invalid action key")
 
     def step(self, left_player_action):
-        right_player_action = np.reshape(self.random_action(), (-1, 2))
+        right_player_action = np.reshape(self.action_space.sample(), (-1, 2))
         left_player_action = np.reshape(left_player_action, (-1, 2))
 
         init_distance_arr = self._ball_to_team_distance_arr(self.team_A)
@@ -421,7 +420,10 @@ class Futbol(gym.Env):
             reward += goal_reward if bx > self.WIDTH - 2 else -goal_reward
             self._position_to_initial()
             self.ball_owner_side = random.choice(["left", "right"])
-            # done = True
+            if self.goal_end:
+                done = True
+            else:
+                pass
 
         self.current_time += self.TIME_STEP
 
