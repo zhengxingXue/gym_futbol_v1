@@ -13,7 +13,7 @@ import pymunk.matplotlib_util
 import matplotlib.pyplot as plt
 from .object import Ball
 from .team import Team
-from .helper import get_vec, setup_walls, normalize_array
+from .helper import get_vec, setup_walls, normalize_array, Side
 
 
 class Futbol(gym.Env):
@@ -107,14 +107,14 @@ class Futbol(gym.Env):
                            player_weight=self.PLAYER_WEIGHT,
                            player_max_velocity=self.PLAYER_MAX_VELOCITY,
                            color=(1, 0, 0, 1),  # red
-                           side="left",
+                           side=Side("left"),
                            player_number=self.number_of_player)
 
         self.team_B = Team(self.space, self.WIDTH, self.HEIGHT,
                            player_weight=self.PLAYER_WEIGHT,
                            player_max_velocity=self.PLAYER_MAX_VELOCITY,
                            color=(0, 0, 1, 1),  # blue
-                           side="right",
+                           side=Side("right"),
                            player_number=self.number_of_player)
 
         self.player_arr = self.team_A.player_array + self.team_B.player_array
@@ -125,12 +125,14 @@ class Futbol(gym.Env):
                          max_velocity=self.BALL_MAX_VELOCITY,
                          elasticity=0.2)
 
+        self.current_time = 0
+        self.ball_owner_side = Side(random.choice(["left", "right"]))
         self.observation = self.reset()
 
     def reset(self):
         """reset the simulation"""
         self.current_time = 0
-        self.ball_owner_side = random.choice(["left", "right"])
+        self.ball_owner_side = Side(random.choice(["left", "right"]))
         self._position_to_initial()
         return self._get_observation()
 
@@ -230,12 +232,12 @@ class Futbol(gym.Env):
             self.ball.set_position(bx + dbx, by + dby)
             self.ball.body.velocity = 0, 0
 
-            if self.ball_owner_side == "right":
+            if self.ball_owner_side == Side("right"):
                 get_ball_player = random.choice(self.team_A.player_array)
-                self.ball_owner_side = "left"
-            elif self.ball_owner_side == "left":
+                self.ball_owner_side = Side("left")
+            elif self.ball_owner_side == Side("left"):
                 get_ball_player = random.choice(self.team_B.player_array)
-                self.ball_owner_side = "right"
+                self.ball_owner_side = Side("right")
             else:
                 print("invalid side")
 
@@ -300,9 +302,9 @@ class Futbol(gym.Env):
         # shoot [2]
         elif action[1] == 2:
             if self.ball.has_contact_with(player):
-                if player.side == "left":
+                if player.side == Side("left"):
                     goal = [self.WIDTH, self.HEIGHT/2]
-                elif player.side == "right":
+                elif player.side == Side("right"):
                     goal = [0, self.HEIGHT/2]
                 else:
                     print("invalid side")
@@ -350,7 +352,7 @@ class Futbol(gym.Env):
         # pass [4]
         elif action[1] == 4:
             if self.ball.has_contact_with(player):
-                team = self.team_A if player.side == "left" else self.team_B
+                team = self.team_A if player.side == Side("left") else self.team_B
 
                 target_player = team.get_pass_target_teammate(
                     player, arrow_keys=action[0])
@@ -419,7 +421,7 @@ class Futbol(gym.Env):
             goal_reward = 1000
             reward += goal_reward if bx > self.WIDTH - 2 else -goal_reward
             self._position_to_initial()
-            self.ball_owner_side = random.choice(["left", "right"])
+            self.ball_owner_side = Side(random.choice(["left", "right"]))
             if self.goal_end:
                 done = True
             else:

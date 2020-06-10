@@ -4,16 +4,17 @@ Team Module.
 import random
 import numpy as np
 from .object import Player
+from .helper import Side
 
 
-class Team():
+class Team:
     """
     Team Class.
     """
 
     def __init__(self, space, width, height, player_weight,
-                 player_max_velocity, color=(1, 0, 0, 1), side="left",
-                 player_number=2, elasiticity=0.2):
+                 player_max_velocity, color=(1, 0, 0, 1), side=Side.left,
+                 player_number=2, elasticity=0.2):
         self.space = space
         self.width = width
         self.height = height
@@ -31,7 +32,7 @@ class Team():
                        mass=player_weight,
                        color=c,
                        max_velocity=player_max_velocity,
-                       elasticity=elasiticity,
+                       elasticity=elasticity,
                        side=side))
 
     # only implemented with red and blue
@@ -41,15 +42,15 @@ class Team():
         else:
             green_range = 0.7
             if color == (1, 0, 0, 1):
-                color_intrement = green_range/(player_number - 1)
+                color_increment = green_range/(player_number - 1)
                 self.color_array = []
                 for i in range(player_number):
-                    self.color_array.append((1, color_intrement*i, 0, 1))
+                    self.color_array.append((1, color_increment*i, 0, 1))
             elif color == (0, 0, 1, 1):
-                color_intrement = green_range/(player_number - 1)
+                color_increment = green_range/(player_number - 1)
                 self.color_array = []
                 for i in range(player_number):
-                    self.color_array.append((0, color_intrement*i, 1, 1))
+                    self.color_array.append((0, color_increment*i, 1, 1))
             else:
                 self.color_array = [color] * player_number
 
@@ -57,9 +58,9 @@ class Team():
         # implement for 10 players and fewer now
         if player_number <= 3:
             # get x position for each player
-            if side == "left":
+            if side == Side.left:
                 self.x_pos_array = [width * 0.25] * player_number
-            elif side == "right":
+            elif side == Side.right:
                 self.x_pos_array = [width * 0.75] * player_number
             else:
                 print("invalid side")
@@ -71,10 +72,10 @@ class Team():
 
         elif player_number <= 6:
             # get x position for each player
-            if side == "left":
+            if side == Side.left:
                 self.x_pos_array = [width * 1/6] * 3 + \
                     [width * 2/6] * (player_number-3)
-            elif side == "right":
+            elif side == Side.right:
                 self.x_pos_array = [width * 5/6] * 3 + \
                     [width * 4/6] * (player_number-3)
             else:
@@ -91,10 +92,10 @@ class Team():
         # 7 player might look wired
         elif player_number <= 10:
             # get x position for each player
-            if side == "left":
+            if side == Side.left:
                 self.x_pos_array = [width * 1/8] * 4 + [width *
                                                         2/8] * 3 + [width * 3/8] * (player_number-7)
-            elif side == "right":
+            elif side == Side.right:
                 self.x_pos_array = [width * 7/8] * 4 + [width *
                                                         6/8] * 3 + [width * 5/8] * (player_number-7)
             else:

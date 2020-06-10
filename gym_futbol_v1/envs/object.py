@@ -3,9 +3,10 @@ Contains object class used in the futbol environment.
 """
 import pymunk
 from pymunk.vec2d import Vec2d
+from .helper import Side
 
 
-class Object():
+class Object:
     """
     Pymunk object Class.
     """
@@ -64,7 +65,7 @@ class Player(Object):
     """
 
     def __init__(self, space, x, y, mass=20, radius=1.5, max_velocity=10,
-                 elasticity=0.2, color=(1, 0, 0, 1), side="left"):
+                 elasticity=0.2, color=(1, 0, 0, 1), side=Side.left):
         super().__init__(space, x, y, mass, radius, max_velocity, elasticity, color)
         self.side = side
 
