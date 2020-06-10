@@ -2,7 +2,8 @@
 
 ## Overview
 This project is a 2D simulation of real world soccer.
-This project contiunes the work on gym-futbol(https://github.com/yc2454/gym-futbol).
+
+It contiunes the work on gym-futbol(https://github.com/yc2454/gym-futbol).
 
 ## Quick start
 
