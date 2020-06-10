@@ -17,3 +17,12 @@ To try the environment with random players:
 $ python main.py
 ```
 The simulation is recorded and showed in the pop up window. The video file is saved in ``videos/`` directory.
+
+## Env
+
+To create the ``futbol`` environment:
+```
+import gym, gym_futbol_v1
+env = gym.make('futbol-v1')  # 2v2 settings
+env.render()
+```
