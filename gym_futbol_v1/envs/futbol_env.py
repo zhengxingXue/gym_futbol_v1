@@ -11,7 +11,7 @@ import numpy as np
 import pymunk
 import pymunk.matplotlib_util
 import matplotlib.pyplot as plt
-from .ball import Ball
+from .object import Ball
 from .team import Team
 
 
