@@ -145,6 +145,7 @@ class Futbol(gym.Env):
         if mode == 'human':
             plt.show()
         elif mode == 'rgb_array':
+            plt.axis('off')
             dpi = 180
             buf = io.BytesIO()
             fig.savefig(buf, format="png", dpi=dpi)

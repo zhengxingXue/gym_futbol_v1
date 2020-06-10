@@ -6,7 +6,7 @@ from stable_baselines.common.env_checker import check_env
 from utils.video_utils import show_video, record_video, record_gif
 
 
-def main(video=True):
+def main(video=False):
     env = gym.make("futbol-v1")
     check_env(env, warn=True)
     model = PPO2(MlpPolicy, env, verbose=1)

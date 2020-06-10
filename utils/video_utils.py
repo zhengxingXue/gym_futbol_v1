@@ -58,4 +58,4 @@ def record_gif(env_id, model, video_length=300, prefix='env', video_folder='vide
         obs, _, _, _ = env.step(action)
         img = env.render(mode='rgb_array')
 
-    imageio.mimsave(video_folder + prefix + '.gif', [np.array(img) for i, img in enumerate(images) if i % 2 == 0], fps=10)
+    imageio.mimsave(video_folder + prefix + '.gif', [np.array(img) for img in images], fps=10)
