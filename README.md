@@ -34,3 +34,7 @@ env.render()
 Recording of initialized PPO2 agent vs. random opponents:
 
 <img src="supplement/ppo2-futbol-pre-train.gif" alt="pre train recording" width="500" />
+
+Recording of a trained PPO2 agent (1 Million time step) vs. random opponents:
+
+<img src="supplement/ppo2-futbol-1M.gif" alt="post train recording" width="500" />
