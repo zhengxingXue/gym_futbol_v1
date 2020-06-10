@@ -13,33 +13,25 @@ import pymunk.matplotlib_util
 import matplotlib.pyplot as plt
 from .object import Ball
 from .team import Team
-
-
-def get_vec(coor_t, coor_o):
-    """
-    get the vector pointing from [coor2] to [coor1] and its magnitude
-    """
-    vec = [coor_t[0] - coor_o[0], coor_t[1] - coor_o[1]]
-    vec_mag = math.sqrt(vec[0]**2 + vec[1]**2)
-    return vec, vec_mag
+from .helper import get_vec, setup_walls, normalize_array
 
 
 class Futbol(gym.Env):
 
     """
-    Futbol is a 2D simulation of real world soccer. 
-    Soccer is a team sport played with a spherical ball between two teams of 11 players, 
+    Futbol is a 2D simulation of real world soccer.
+    Soccer is a team sport played with a spherical ball between two teams of 11 players,
     including a goalkeeper. The goal is to get the ball into the net. For this simulation,
     user can specifiy the player number and the goalkeeper is not implemented for now.
 
     **STATE:**
-    The state consists of position and velocity of each player and the ball. 
+    The state consists of position and velocity of each player and the ball.
     The state is flattened and normalized for better RL performance.
 
     **ACTIONS:**
-    The action consists of arrow key and action key, inspired by PES2020. 
+    The action consists of arrow key and action key, inspired by PES2020.
     Arrow key controls the player action direction.
-    Action key contorls the action one player take at the moment. 
+    Action key contorls the action one player take at the moment.
     """
 
     metadata = {
@@ -63,28 +55,11 @@ class Futbol(gym.Env):
     PLAYER_FORCE_LIMIT = 40
     BALL_FORCE_LIMIT = 120
 
-    BALL_max_arr = np.array(
-        [WIDTH, HEIGHT, BALL_MAX_VELOCITY, BALL_MAX_VELOCITY])
-    BALL_min_arr = np.array([0, 0, -BALL_MAX_VELOCITY, -BALL_MAX_VELOCITY])
-    BALL_avg_arr = (BALL_max_arr + BALL_min_arr) / 2
-    BALL_range_arr = (BALL_max_arr - BALL_min_arr) / 2
-
-    padding = 3
-    PLAYER_max_arr = np.array(
-        [WIDTH + padding, HEIGHT, PLAYER_MAX_VELOCITY, PLAYER_MAX_VELOCITY])
-    PLAYER_min_arr = np.array(
-        [0 - padding, 0, -PLAYER_MAX_VELOCITY, -PLAYER_MAX_VELOCITY])
-    PLAYER_avg_arr = (PLAYER_max_arr + PLAYER_min_arr) / 2
-    PLAYER_range_arr = (PLAYER_max_arr - PLAYER_min_arr) / 2
-
-    def __init__(self, debug=False, number_of_player=2):
+    def __init__(self, debug=False, number_of_player=2, normalize_obs=True):
 
         self.debug = debug
         self.number_of_player = number_of_player
-
-        self.PLAYER_avg_arr = np.tile(self.PLAYER_avg_arr, number_of_player)
-        self.PLAYER_range_arr = np.tile(
-            self.PLAYER_range_arr, number_of_player)
+        self.normalize_obs = normalize_obs
 
         # action space
         # 1) Arrow Keys: Discrete 5  - NOOP[0], UP[1], RIGHT[2], DOWN[3], LEFT[4]  - params: min: 0, max: 4
@@ -97,12 +72,22 @@ class Futbol(gym.Env):
         # [1] y position
         # [2] x velocity
         # [3] y velocity
-        self.observation_space = spaces.Box(
-            low=np.array([-1., -1., -1., -1.] *
-                         (1+self.number_of_player * 2), dtype=np.float32),
-            high=np.array([1., 1., 1., 1.] *
-                          (1+self.number_of_player * 2), dtype=np.float32),
-            dtype=np.float32)
+        if self.normalize_obs:
+            self.observation_space = spaces.Box(
+                low=np.array([-1., -1., -1., -1.] *
+                             (1+self.number_of_player * 2), dtype=np.float32),
+                high=np.array([1., 1., 1., 1.] *
+                              (1+self.number_of_player * 2), dtype=np.float32),
+                dtype=np.float32)
+        else:
+            self.observation_space = spaces.Box(
+                low=np.array([0 - 3, 0, -self.BALL_MAX_VELOCITY, -self.BALL_MAX_VELOCITY] +
+                             [0 - 3, 0, -self.PLAYER_MAX_VELOCITY, -self.PLAYER_MAX_VELOCITY] *
+                             (self.number_of_player * 2), dtype=np.float32),
+                high=np.array([self.WIDTH + 3, self.HEIGHT, self.BALL_MAX_VELOCITY, self.BALL_MAX_VELOCITY] +
+                              [self.WIDTH + 3, self.HEIGHT, self.PLAYER_MAX_VELOCITY, self.PLAYER_MAX_VELOCITY] *
+                              (self.number_of_player * 2), dtype=np.float32),
+                dtype=np.float32)
 
         # create space
         self.space = pymunk.Space()
@@ -113,7 +98,8 @@ class Futbol(gym.Env):
         self.space.damping = 0.95
 
         # create walls
-        self._setup_walls(self.WIDTH, self.HEIGHT)
+        self.space, self.static, self.static_goal = setup_walls(
+            self.space, self.WIDTH, self.HEIGHT, self.GOAL_SIZE)
 
         # Teams
         self.team_A = Team(self.space, self.WIDTH, self.HEIGHT,
@@ -171,13 +157,29 @@ class Futbol(gym.Env):
             return img
 
     def _get_observation(self):
-        """normalized observation"""
-        ball_observation = self._normalize_ball(
-            np.array(self.ball.get_observation()))
-        team_A_observation = self._normalize_player(
-            self.team_A.get_observation())
-        team_B_observation = self._normalize_player(
-            self.team_B.get_observation())
+        """get observation"""
+        if self.normalize_obs:
+            ball_max_arr = np.array(
+                [self.WIDTH + 3, self.HEIGHT, self.BALL_MAX_VELOCITY, self.BALL_MAX_VELOCITY])
+            ball_min_arr = np.array(
+                [-3, 0, -self.BALL_MAX_VELOCITY, -self.BALL_MAX_VELOCITY])
+
+            player_max_arr = np.array(
+                [self.WIDTH + 3, self.HEIGHT, self.PLAYER_MAX_VELOCITY, self.PLAYER_MAX_VELOCITY])
+            player_min_arr = np.array(
+                [-3, 0, -self.PLAYER_MAX_VELOCITY, -self.PLAYER_MAX_VELOCITY])
+
+            ball_observation = normalize_array(
+                np.array(self.ball.get_observation()), ball_max_arr, ball_min_arr)
+
+            team_A_observation = normalize_array(
+                self.team_A.get_observation(), player_max_arr, player_min_arr, self.number_of_player)
+            team_B_observation = normalize_array(
+                self.team_B.get_observation(), player_max_arr, player_min_arr, self.number_of_player)
+        else:
+            ball_observation = self.ball.get_observation()
+            team_A_observation = self.team_A.get_observation()
+            team_B_observation = self.team_B.get_observation()
         obs = np.concatenate(
             (ball_observation, team_A_observation, team_B_observation))
         return obs
@@ -195,72 +197,6 @@ class Futbol(gym.Env):
         # move to the target position
         self.space.step(0.0001)
         self.observation = self._get_observation()
-
-    def _normalize_ball(self, ball_observation):
-        """normalize ball observation"""
-        ball_observation = (ball_observation -
-                            self.BALL_avg_arr) / self.BALL_range_arr
-        return ball_observation
-
-    def _normalize_player(self, player_observation):
-        """normalize player observation"""
-        player_observation = (player_observation -
-                              self.PLAYER_avg_arr) / self.PLAYER_range_arr
-        return player_observation
-
-    def _setup_walls(self, width, height):
-        # Create walls.
-        static = [
-            pymunk.Segment(
-                self.space.static_body,
-                (0, 0), (0, height/2-self.GOAL_SIZE/2), 1),
-            pymunk.Segment(
-                self.space.static_body,
-                (0, height/2+self.GOAL_SIZE/2), (0, height), 1),
-            pymunk.Segment(
-                self.space.static_body,
-                (0, height), (width, height), 1),
-            pymunk.Segment(
-                self.space.static_body,
-                (width, 0), (width, height/2-self.GOAL_SIZE/2), 1),
-            pymunk.Segment(
-                self.space.static_body,
-                (width, height/2+self.GOAL_SIZE/2), (width, height), 1),
-            pymunk.Segment(
-                self.space.static_body,
-                (0, 0), (width, 0), 1)
-        ]
-
-        static_goal = [
-            pymunk.Segment(
-                self.space.static_body,
-                (-2, height/2-self.GOAL_SIZE/2), (-2, height/2+self.GOAL_SIZE/2), 1),
-            pymunk.Segment(
-                self.space.static_body,
-                (-2, height/2-self.GOAL_SIZE/2), (0, height/2-self.GOAL_SIZE/2), 1),
-            pymunk.Segment(
-                self.space.static_body,
-                (-2, height/2+self.GOAL_SIZE/2), (0, height/2+self.GOAL_SIZE/2), 1),
-            pymunk.Segment(
-                self.space.static_body,
-                (width+2, height/2-self.GOAL_SIZE/2), (width+2, height/2+self.GOAL_SIZE/2), 1),
-            pymunk.Segment(
-                self.space.static_body,
-                (width, height/2-self.GOAL_SIZE/2), (width+2, height/2-self.GOAL_SIZE/2), 1),
-            pymunk.Segment(
-                self.space.static_body,
-                (width, height/2+self.GOAL_SIZE/2), (width+2, height/2+self.GOAL_SIZE/2), 1)
-        ]
-
-        for s in (static + static_goal):
-            s.friction = 1.
-            s.group = 1
-            s.collision_type = 1
-
-        self.static = static
-        self.space.add(static)
-        self.static_goal = static_goal
-        self.space.add(static_goal)
 
     def ball_contact_wall(self):
         """
