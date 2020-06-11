@@ -11,7 +11,7 @@ def main(video=True):
     check_env(env, warn=True)
     model = PPO2(MlpPolicy, env, verbose=1)
     prefix = 'ppo2-futbol-pre'
-    record_length = 50
+    record_length = 300
     if video:
         record_video('futbol-v1', model, video_length=record_length, prefix=prefix)
         show_video('videos/' + prefix + '-step-0-to-step-' + str(record_length) + '.mp4')

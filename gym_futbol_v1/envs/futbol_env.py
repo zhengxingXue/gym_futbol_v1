@@ -11,9 +11,9 @@ import numpy as np
 import pymunk
 import pymunk.matplotlib_util
 import matplotlib.pyplot as plt
-from .object import Ball
 from .team import Team
-from .helper import get_vec, setup_walls, normalize_array, Side
+from .helper import get_vec, setup_walls, normalize_array, Side, Ball, check_and_fix_out_bounds, ball_contact_goal
+from .action import process_action
 
 
 class Futbol(gym.Env):
@@ -55,7 +55,7 @@ class Futbol(gym.Env):
     PLAYER_FORCE_LIMIT = 40
     BALL_FORCE_LIMIT = 120
 
-    def __init__(self, debug=False, number_of_player=2, normalize_obs=True, goal_end=True):
+    def __init__(self, debug=False, number_of_player=2, normalize_obs=True, goal_end=False):
 
         self.debug = debug
         self.number_of_player = number_of_player
@@ -126,13 +126,11 @@ class Futbol(gym.Env):
                          elasticity=0.2)
 
         self.current_time = 0
-        self.ball_owner_side = Side(random.choice(["left", "right"]))
         self.observation = self.reset()
 
     def reset(self):
         """reset the simulation"""
         self.current_time = 0
-        self.ball_owner_side = Side(random.choice(["left", "right"]))
         self._position_to_initial()
         return self._get_observation()
 
@@ -202,184 +200,6 @@ class Futbol(gym.Env):
         self.space.step(0.0001)
         self.observation = self._get_observation()
 
-    def ball_contact_wall(self):
-        """
-        return true and wall index if the ball is in contact with the walls
-        """
-        wall_index, i = -1, 0
-        for wall in self.static:
-            if self.ball.shape.shapes_collide(wall).points != []:
-                wall_index = i
-                return True, wall_index
-            i += 1
-        return False, wall_index
-
-    def check_and_fix_out_bounds(self):
-        out, wall_index = self.ball_contact_wall()
-        if out:
-            bx, by = self.ball.get_position()
-            dbx, dby, dpx, dpy = 0, 0, 0, 0
-
-            if wall_index == 1 or wall_index == 0:  # left bound
-                dbx, dpx = 3.5, 1
-            elif wall_index == 3 or wall_index == 4:
-                dbx, dpx = -3.5, -1
-            elif wall_index == 2:
-                dby, dpy = -3.5, -1
-            else:
-                dby, dpy = 3.5, 1
-
-            self.ball.set_position(bx + dbx, by + dby)
-            self.ball.body.velocity = 0, 0
-
-            if self.ball_owner_side == Side("right"):
-                get_ball_player = random.choice(self.team_A.player_array)
-                self.ball_owner_side = Side("left")
-            elif self.ball_owner_side == Side("left"):
-                get_ball_player = random.choice(self.team_B.player_array)
-                self.ball_owner_side = Side("right")
-            else:
-                print("invalid side")
-
-            get_ball_player.set_position(bx + dpx, by + dpy)
-            get_ball_player.body.velocity = 0, 0
-        else:
-            pass
-        return out
-
-    def ball_contact_goal(self):
-        """
-        return true if score
-        """
-        goal = False
-        for goal_wall in self.static_goal:
-            goal = goal or self.ball.shape.shapes_collide(
-                goal_wall).points != []
-        return goal
-
-    def _ball_move_with_player(self, player):
-        """
-        if player has contact with ball and move, let the ball move with the player.
-        """
-        if self.ball.has_contact_with(player):
-            self.ball.body.velocity = player.body.velocity
-        else:
-            pass
-
-    def _process_action(self, player, action):
-        # Arrow Keys: NOOP
-        if action[0] == 0:
-            force_x, force_y = 0, 0
-        # Arrow Keys: UP
-        elif action[0] == 1:
-            force_x, force_y = 0, 1
-        # Arrow Keys: RIGHT
-        elif action[0] == 2:
-            force_x, force_y = 1, 0
-        # Arrow Keys: DOWN
-        elif action[0] == 3:
-            force_x, force_y = 0, -1
-        # Arrow Keys: LEFT
-        elif action[0] == 4:
-            force_x, force_y = -1, 0
-        else:
-            print("invalid arrow keys")
-
-        # Action keys
-        # noop [0]
-        if action[1] == 0:
-            player.apply_force_to_player(self.PLAYER_WEIGHT * force_x,
-                                         self.PLAYER_WEIGHT * force_y)
-
-            self._ball_move_with_player(player)
-
-        # dash [1]
-        elif action[1] == 1:
-            player.apply_force_to_player(self.PLAYER_FORCE_LIMIT * force_x,
-                                         self.PLAYER_FORCE_LIMIT * force_y)
-            self._ball_move_with_player(player)
-
-        # shoot [2]
-        elif action[1] == 2:
-            if self.ball.has_contact_with(player):
-                if player.side == Side("left"):
-                    goal = [self.WIDTH, self.HEIGHT/2]
-                elif player.side == Side("right"):
-                    goal = [0, self.HEIGHT/2]
-                else:
-                    print("invalid side")
-
-                ball_pos = self.ball.get_position()
-                ball_to_goal_vec, ball_to_goal_vec_mag = get_vec(
-                    goal, ball_pos)
-
-                ball_force_x = self.BALL_FORCE_LIMIT * \
-                    ball_to_goal_vec[0] / ball_to_goal_vec_mag
-                ball_force_y = self.BALL_FORCE_LIMIT * \
-                    ball_to_goal_vec[1] / ball_to_goal_vec_mag
-
-                # decrease the velocity influence on shoot
-                self.ball.body.velocity /= 2
-
-                self.ball_owner_side = player.side
-                self.ball.apply_force_to_ball(ball_force_x, ball_force_y)
-            else:
-                pass
-
-        # press [3]
-        elif action[1] == 3:
-            # cannot press with ball
-            if self.ball.has_contact_with(player):
-                pass
-            # no ball, no arrow keys, run to ball (press)
-            elif action[0] == 0:
-                ball_pos = self.ball.get_position()
-                player_pos = player.get_position()
-
-                player_to_ball_vec, player_to_ball_vec_mag = get_vec(
-                    ball_pos, player_pos)
-
-                player_force_x = self.PLAYER_FORCE_LIMIT * \
-                    player_to_ball_vec[0] / player_to_ball_vec_mag
-                player_force_y = self.PLAYER_FORCE_LIMIT * \
-                    player_to_ball_vec[1] / player_to_ball_vec_mag
-
-                player.apply_force_to_player(player_force_x, player_force_y)
-            # no ball, arrow keys pressed, run as the arrow key
-            else:
-                pass
-
-        # pass [4]
-        elif action[1] == 4:
-            if self.ball.has_contact_with(player):
-                team = self.team_A if player.side == Side("left") else self.team_B
-
-                target_player = team.get_pass_target_teammate(
-                    player, arrow_keys=action[0])
-
-                goal = target_player.get_position()
-
-                ball_pos = self.ball.get_position()
-                ball_to_goal_vec, ball_to_goal_vec_mag = get_vec(
-                    goal, ball_pos)
-
-                ball_force_x = (self.BALL_FORCE_LIMIT - 20) * \
-                    ball_to_goal_vec[0] / ball_to_goal_vec_mag
-                ball_force_y = (self.BALL_FORCE_LIMIT - 20) * \
-                    ball_to_goal_vec[1] / ball_to_goal_vec_mag
-
-                # decrease the velocity influence on pass
-                self.ball.body.velocity /= 10
-
-                self.ball_owner_side = player.side
-                self.ball.apply_force_to_ball(ball_force_x, ball_force_y)
-            # cannot pass ball without ball
-            else:
-                pass
-
-        else:
-            print("invalid action key")
-
     def step(self, left_player_action):
         right_player_action = np.reshape(self.action_space.sample(), (-1, 2))
         left_player_action = np.reshape(left_player_action, (-1, 2))
@@ -394,15 +214,15 @@ class Futbol(gym.Env):
         action_arr = np.concatenate((left_player_action, right_player_action))
 
         for player, action in zip(self.player_arr, action_arr):
-            self._process_action(player, action)
+            process_action(self, player, action)
             # change ball owner if any contact
             if self.ball.has_contact_with(player):
-                self.ball_owner_side = player.side
+                self.ball.owner_side = player.side
             else:
                 pass
 
         # fix the out of bound situation
-        out = self.check_and_fix_out_bounds()
+        out = check_and_fix_out_bounds(self.ball, self.static, self.team_A, self.team_B)
 
         # step environment using pymunk
         self.space.step(self.TIME_STEP)
@@ -415,13 +235,12 @@ class Futbol(gym.Env):
             reward += self.get_team_reward(init_distance_arr, self.team_A)
             reward += self.get_ball_reward(ball_init, ball_after)
 
-        if self.ball_contact_goal():
+        if ball_contact_goal(self.ball, self.static_goal):
             bx, _ = self.ball.get_position()
 
             goal_reward = 1000
             reward += goal_reward if bx > self.WIDTH - 2 else -goal_reward
             self._position_to_initial()
-            self.ball_owner_side = Side(random.choice(["left", "right"]))
             if self.goal_end:
                 done = True
             else:

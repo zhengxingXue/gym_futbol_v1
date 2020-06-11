@@ -3,8 +3,7 @@ Team Module.
 """
 import random
 import numpy as np
-from .object import Player
-from .helper import Side
+from .helper import Side, Player
 
 
 class Team:
