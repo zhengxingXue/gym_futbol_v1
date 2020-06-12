@@ -72,13 +72,15 @@ def process_action(self, player, action):
         player.apply_force_to_player(self.PLAYER_WEIGHT * force_x,
                                      self.PLAYER_WEIGHT * force_y)
 
-        ball_move_with_player(self.ball, player)
+        if self.ball.has_contact_with(player):
+            ball_move_with_player(self.ball, player)
 
     # dash [1]
     elif action[1] == 1:
         player.apply_force_to_player(self.PLAYER_FORCE_LIMIT * force_x,
                                      self.PLAYER_FORCE_LIMIT * force_y)
-        ball_move_with_player(self.ball, player)
+        if self.ball.has_contact_with(player):
+            ball_move_with_player(self.ball, player)
 
     # shoot [2]
     elif action[1] == 2:
