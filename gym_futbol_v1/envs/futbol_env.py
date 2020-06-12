@@ -71,14 +71,14 @@ class Futbol(gym.Env):
         # [1] y position
         # [2] x velocity
         # [3] y velocity
-        self.observation_space = spaces.Box(
-            low=np.array([-3, 0, -self.BALL_MAX_VELOCITY, -self.BALL_MAX_VELOCITY] +
-                         [-3, 0, -self.PLAYER_MAX_VELOCITY, -self.PLAYER_MAX_VELOCITY] *
-                         (self.number_of_player * 2), dtype=np.float32),
-            high=np.array([self.WIDTH + 3, self.HEIGHT, self.BALL_MAX_VELOCITY, self.BALL_MAX_VELOCITY] +
-                          [self.WIDTH + 3, self.HEIGHT, self.PLAYER_MAX_VELOCITY, self.PLAYER_MAX_VELOCITY] *
-                          (self.number_of_player * 2), dtype=np.float32),
-            dtype=np.float32)
+        self.obs_low = np.array([-3, 0, -self.BALL_MAX_VELOCITY, -self.BALL_MAX_VELOCITY] +
+                                [-3, 0, -self.PLAYER_MAX_VELOCITY, -self.PLAYER_MAX_VELOCITY] *
+                                (self.number_of_player * 2), dtype=np.float32)
+        self.obs_high = np.array([self.WIDTH + 3, self.HEIGHT, self.BALL_MAX_VELOCITY, self.BALL_MAX_VELOCITY] +
+                                 [self.WIDTH + 3, self.HEIGHT, self.PLAYER_MAX_VELOCITY, self.PLAYER_MAX_VELOCITY] *
+                                 (self.number_of_player * 2), dtype=np.float32)
+
+        self.observation_space = spaces.Box(low=self.obs_low, high=self.obs_high, dtype=np.float32)
 
         # create space
         self.space = pymunk.Space()
@@ -179,7 +179,7 @@ class Futbol(gym.Env):
         done = False
         reward = 0
 
-        action_arr = np.concatenate((left_player_action, right_player_action)).reshape((-1,2))
+        action_arr = np.concatenate((left_player_action, right_player_action)).reshape((-1, 2))
 
         for player, action in zip(self.player_arr, action_arr):
             process_action(self, player, action)
