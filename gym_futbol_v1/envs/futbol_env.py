@@ -1,8 +1,6 @@
 """
 Env Module.
 """
-import random
-import math
 import io
 import cv2
 import gym
@@ -12,7 +10,7 @@ import pymunk
 import pymunk.matplotlib_util
 import matplotlib.pyplot as plt
 from gym_futbol_v1.envs.team import Team
-from gym_futbol_v1.envs.helper import get_vec, setup_walls, normalize_array, Side, Ball, check_and_fix_out_bounds, ball_contact_goal
+from gym_futbol_v1.envs.helper import setup_walls, normalize_array, Side, Ball, check_and_fix_out_bounds, ball_contact_goal
 from gym_futbol_v1.envs.action import process_action
 from gym_futbol_v1.envs.reward import Reward
 
