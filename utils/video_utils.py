@@ -1,5 +1,6 @@
 import time
 import io
+import os
 import imageio
 import gym
 from stable_baselines.common.vec_env import VecVideoRecorder, DummyVecEnv
@@ -108,11 +109,15 @@ def record_video_with_title(env_id, model, prefix='test', video_folder='videos/'
     obs = env.reset()
     img, _ = render_helper(env, [0, 0]*env.number_of_player, 0, 0)
 
+    video_folder = os.path.abspath(video_folder)
+    # Create output folder if needed
+    os.makedirs(video_folder, exist_ok=True)
+
     height, width, _ = np.shape(img)
     # initialize video writer
     fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
     fps = env.metadata['video.frames_per_second']
-    video_filename = video_folder + prefix + '.mp4'
+    video_filename = video_folder + '/' + prefix + '.mp4'
     out = cv2.VideoWriter(video_filename, fourcc, fps, (width, height))
     done = False
     total_reward = 0
