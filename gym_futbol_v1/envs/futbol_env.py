@@ -188,6 +188,7 @@ class Futbol(gym.Env):
             ball_observation = self.ball.get_observation()
             team_A_observation = self.team_A.get_observation()
             team_B_observation = self.team_B.get_observation()
+        # flatten obs
         obs = np.concatenate(
             (ball_observation, team_A_observation, team_B_observation))
         return obs
@@ -201,12 +202,18 @@ class Futbol(gym.Env):
         # set the ball velocity to zero
         self.ball.body.velocity = 0, 0
 
-    def step(self, left_player_action):
+    def step(self, team_action, team_side=Side.left):
 
-        right_player_action = np.reshape(self.action_space.sample(), (-1, 2))
-        left_player_action = np.reshape(left_player_action, (-1, 2))
+        if team_side == Side.left:
+            right_player_action = np.reshape(self.action_space.sample(), (-1, 2))
+            left_player_action = np.reshape(team_action, (-1, 2))
+            team = self.team_A
+        else:
+            right_player_action = np.reshape(team_action, (-1, 2))
+            left_player_action = np.reshape(self.action_space.sample(), (-1, 2))
+            team = self.team_B
 
-        init_distance_arr = self.reward_class.ball_to_team_distance_arr(self.team_A)
+        init_distance_arr = self.reward_class.ball_to_team_distance_arr(team)
 
         ball_init = self.ball.get_position()
 
@@ -234,14 +241,11 @@ class Futbol(gym.Env):
         if not out:
             ball_after = self.ball.get_position()
 
-            reward += self.reward_class.get_team_reward(init_distance_arr, self.team_A)
-            reward += self.reward_class.get_ball_to_goal_reward(Side.left, ball_init, ball_after)
+            reward += self.reward_class.get_team_reward(init_distance_arr, team)
+            reward += self.reward_class.get_ball_to_goal_reward(team_side, ball_init, ball_after)
 
         if ball_contact_goal(self.ball, self.static_goal):
-            bx, _ = self.ball.get_position()
-
-            goal_reward = 1000
-            reward += goal_reward if bx > self.WIDTH - 2 else -goal_reward
+            reward += self.reward_class.get_goal_reward(team_side)
             self._set_position_to_initial()
             if self.goal_end:
                 done = True
