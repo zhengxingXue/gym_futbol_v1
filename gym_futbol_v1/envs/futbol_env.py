@@ -202,8 +202,6 @@ class Futbol(gym.Env):
         self.ball.body.velocity = 0, 0
 
     def step(self, left_player_action):
-        # step the pymunk space a little so that the position to initial can work
-        self.space.step(10 ** -7)
 
         right_player_action = np.reshape(self.action_space.sample(), (-1, 2))
         left_player_action = np.reshape(left_player_action, (-1, 2))

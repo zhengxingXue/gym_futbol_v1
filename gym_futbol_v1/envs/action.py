@@ -72,15 +72,13 @@ def process_action(self, player, action):
         player.apply_force_to_player(self.PLAYER_WEIGHT * force_x,
                                      self.PLAYER_WEIGHT * force_y)
 
-        if self.ball.has_contact_with(player):
-            ball_move_with_player(self.ball, player)
+        ball_move_with_player(self.ball, player)
 
     # dash [1]
     elif action[1] == 1:
         player.apply_force_to_player(self.PLAYER_FORCE_LIMIT * force_x,
                                      self.PLAYER_FORCE_LIMIT * force_y)
-        if self.ball.has_contact_with(player):
-            ball_move_with_player(self.ball, player)
+        ball_move_with_player(self.ball, player)
 
     # shoot [2]
     elif action[1] == 2:
@@ -113,7 +111,7 @@ def process_action(self, player, action):
     elif action[1] == 3:
         # cannot press with ball
         if self.ball.has_contact_with(player):
-            pass
+            player.apply_force_to_player(0, 0)
         # no ball, no arrow keys, run to ball (press)
         elif action[0] == 0:
             ball_pos = self.ball.get_position()
@@ -128,9 +126,11 @@ def process_action(self, player, action):
                 player_to_ball_vec[1] / player_to_ball_vec_mag
 
             player.apply_force_to_player(player_force_x, player_force_y)
-        # no ball, arrow keys pressed, run as the arrow key
+        # no ball, arrow keys pressed, run as the arrow key, similar to dash
         else:
-            pass
+            player.apply_force_to_player(self.PLAYER_FORCE_LIMIT * force_x,
+                                         self.PLAYER_FORCE_LIMIT * force_y)
+            ball_move_with_player(self.ball, player)
 
     # pass [4]
     elif action[1] == 4:
