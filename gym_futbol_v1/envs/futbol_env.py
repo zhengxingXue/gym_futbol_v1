@@ -80,13 +80,6 @@ class Futbol(gym.Env):
                           (self.number_of_player * 2), dtype=np.float32),
             dtype=np.float32)
 
-        self.normalized_observation_space = spaces.Box(
-             low=np.array([-1., -1., -1., -1.] *
-                          (1+self.number_of_player * 2), dtype=np.float32),
-             high=np.array([1., 1., 1., 1.] *
-                           (1+self.number_of_player * 2), dtype=np.float32),
-             dtype=np.float32)
-
         # create space
         self.space = pymunk.Space()
         self.space.gravity = 0, 0
@@ -166,44 +159,6 @@ class Futbol(gym.Env):
             plt.close()
             return img
 
-    def _get_observation(self):
-        """get observation"""
-        ball_observation = self.ball.get_observation()
-        team_A_observation = self.team_A.get_observation()
-        team_B_observation = self.team_B.get_observation()
-        # flatten obs
-        obs = np.concatenate(
-            (ball_observation, team_A_observation, team_B_observation))
-        return obs
-
-    def normalize_observation_array(self, obs):
-        """
-        normalize the input observation array
-        """
-        ball_max_arr = np.array(
-            [self.WIDTH + 3, self.HEIGHT, self.BALL_MAX_VELOCITY, self.BALL_MAX_VELOCITY])
-        ball_min_arr = np.array(
-            [-3, 0, -self.BALL_MAX_VELOCITY, -self.BALL_MAX_VELOCITY])
-
-        player_max_arr = np.array(
-            [self.WIDTH + 3, self.HEIGHT, self.PLAYER_MAX_VELOCITY, self.PLAYER_MAX_VELOCITY])
-        player_min_arr = np.array(
-            [-3, 0, -self.PLAYER_MAX_VELOCITY, -self.PLAYER_MAX_VELOCITY])
-
-        max_arr = np.concatenate((ball_max_arr, np.tile(player_max_arr, self.number_of_player * 2)))
-        min_arr = np.concatenate((ball_min_arr, np.tile(player_min_arr, self.number_of_player * 2)))
-        normalized_observation = normalize_array(obs, max_arr, min_arr)
-        return normalized_observation
-
-    def _set_position_to_initial(self):
-        """position ball and player to the initial position and set their velocity to 0"""
-        self.team_A.set_position_to_initial()
-        self.team_B.set_position_to_initial()
-        self.ball.set_position(self.WIDTH * 0.5, self.HEIGHT * 0.5)
-
-        # set the ball velocity to zero
-        self.ball.body.velocity = 0, 0
-
     def step(self, team_action, team_side=Side.left):
         # left = team_A
         # right = team_B
@@ -262,3 +217,53 @@ class Futbol(gym.Env):
             done = True
 
         return self.observation, reward, done, {}
+
+    def _get_observation(self):
+        """get observation"""
+        ball_observation = self.ball.get_observation()
+        team_A_observation = self.team_A.get_observation()
+        team_B_observation = self.team_B.get_observation()
+        # flatten obs
+        obs = np.concatenate(
+            (ball_observation, team_A_observation, team_B_observation))
+        return obs
+
+    def _set_position_to_initial(self):
+        """position ball and player to the initial position and set their velocity to 0"""
+        self.team_A.set_position_to_initial()
+        self.team_B.set_position_to_initial()
+        self.ball.set_position(self.WIDTH * 0.5, self.HEIGHT * 0.5)
+
+        # set the ball velocity to zero
+        self.ball.body.velocity = 0, 0
+
+    def get_normalized_observation_space(self):
+        """
+        get the normalized obbservation space
+        """
+        normalized_observation_space = spaces.Box(
+            low=np.array([-1., -1., -1., -1.] *
+                         (1 + self.number_of_player * 2), dtype=np.float32),
+            high=np.array([1., 1., 1., 1.] *
+                          (1 + self.number_of_player * 2), dtype=np.float32),
+            dtype=np.float32)
+        return normalized_observation_space
+
+    def normalize_observation_array(self, obs):
+        """
+        normalize the input observation array
+        """
+        ball_max_arr = np.array(
+            [self.WIDTH + 3, self.HEIGHT, self.BALL_MAX_VELOCITY, self.BALL_MAX_VELOCITY])
+        ball_min_arr = np.array(
+            [-3, 0, -self.BALL_MAX_VELOCITY, -self.BALL_MAX_VELOCITY])
+
+        player_max_arr = np.array(
+            [self.WIDTH + 3, self.HEIGHT, self.PLAYER_MAX_VELOCITY, self.PLAYER_MAX_VELOCITY])
+        player_min_arr = np.array(
+            [-3, 0, -self.PLAYER_MAX_VELOCITY, -self.PLAYER_MAX_VELOCITY])
+
+        max_arr = np.concatenate((ball_max_arr, np.tile(player_max_arr, self.number_of_player * 2)))
+        min_arr = np.concatenate((ball_min_arr, np.tile(player_min_arr, self.number_of_player * 2)))
+        normalized_observation = normalize_array(obs, max_arr, min_arr)
+        return normalized_observation
