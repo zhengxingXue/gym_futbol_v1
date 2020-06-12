@@ -1,9 +1,13 @@
 import time
+import io
 import imageio
 import gym
 from stable_baselines.common.vec_env import VecVideoRecorder, DummyVecEnv
 import cv2
+import pymunk
 import numpy as np
+import matplotlib.pyplot as plt
+from gym_futbol_v1.envs.action import action_key_string, arrow_key_string
 
 
 def show_video(name):
@@ -58,4 +62,59 @@ def record_gif(env_id, model, video_length=300, prefix='env', video_folder='vide
         obs, _, _, _ = env.step(action)
         img = env.render(mode='rgb_array')
 
-    imageio.mimsave(video_folder + prefix + '.gif', [np.array(img) for img in images], fps=10)
+    fps = env.metadata['video.frames_per_second']
+    imageio.mimsave(video_folder + prefix + '.gif', [np.array(img) for img in images], fps=fps)
+
+
+def record_video_with_title(env_id, model, prefix='test', video_folder='videos/'):
+    env = gym.make(env_id)
+    obs = env.reset()
+    img = env.render(mode='rgb_array')
+    height, width, _ = np.shape(img)
+    # initialize video writer
+    fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
+    fps = env.metadata['video.frames_per_second']
+    video_filename = video_folder + prefix + '.mp4'
+    out = cv2.VideoWriter(video_filename, fourcc, fps, (width, height))
+    done = False
+    total_reward = 0
+
+    while not done:
+        action, _ = model.predict(obs)
+        obs, reward, done, _ = env.step(action)
+
+        # plot the current state
+        padding = 5
+        fig = plt.figure()
+        ax = fig.add_subplot()
+        ax = plt.axes(xlim=(0 - padding, env.WIDTH + padding),
+                      ylim=(0 - padding, env.HEIGHT + padding))
+        ax.set_aspect("equal")
+        o = pymunk.matplotlib_util.DrawOptions(ax)
+        env.space.debug_draw(o)
+
+        total_reward += reward
+        title_str = "total reward : " + str(total_reward)
+        title_str += "\ncurrent reward : " + str(reward)
+
+        for i in range(env.number_of_player):
+            title_str += "\nplayer " + str(i) + " action : " + action_key_string(
+                action[2 * i + 1]) + " arrow : " + arrow_key_string(action[2 * i])
+        plt.title(title_str, loc='left')
+        plt.axis('off')
+
+        # convert the plt figure to RGB array
+        dpi = 180
+        buf = io.BytesIO()
+        fig.savefig(buf, format="png", dpi=dpi)
+        buf.seek(0)
+        img_arr = np.frombuffer(buf.getvalue(), dtype=np.uint8)
+        buf.close()
+        img = cv2.imdecode(img_arr, 1)
+        # img = cv2.cvtColor(img, cv2.COLOR_RGBA2RGB)
+        plt.close()
+        # plt.show()
+
+        out.write(img)
+
+    out.release()

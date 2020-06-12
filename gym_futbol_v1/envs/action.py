@@ -18,6 +18,32 @@ class ActionKeys(enum.Enum):
     PASS = 4
 
 
+def action_key_string(action_key):
+    if action_key == 0:
+        return "noop "
+    elif action_key == 1:
+        return "dash "
+    elif action_key == 2:
+        return "shoot"
+    elif action_key == 3:
+        return "press"
+    elif action_key == 4:
+        return "pass "
+
+
+def arrow_key_string(arrow_key):
+    if arrow_key == 0:
+        return "noop "
+    elif arrow_key == 1:
+        return "up   "
+    elif arrow_key == 2:
+        return "right"
+    elif arrow_key == 3:
+        return "down "
+    elif arrow_key == 4:
+        return "left "
+
+
 def process_action(self, player, action):
     """
     Process the action for each player

@@ -131,8 +131,14 @@ class Futbol(gym.Env):
     def reset(self):
         """reset the simulation"""
         self.current_time = 0
-        self._position_to_initial()
-        return self._get_observation()
+        self._set_position_to_initial()
+
+        # after set position, need to step the space so that the object
+        # move to the target position
+        self.space.step(10**-7)
+        self.observation = self._get_observation()
+
+        return self.observation
 
     def render(self, mode='human'):
         padding = 5
@@ -186,7 +192,7 @@ class Futbol(gym.Env):
             (ball_observation, team_A_observation, team_B_observation))
         return obs
 
-    def _position_to_initial(self):
+    def _set_position_to_initial(self):
         """position ball and player to the initial position and set their velocity to 0"""
         self.team_A.set_position_to_initial()
         self.team_B.set_position_to_initial()
@@ -195,12 +201,10 @@ class Futbol(gym.Env):
         # set the ball velocity to zero
         self.ball.body.velocity = 0, 0
 
-        # after set position, need to step the space so that the object
-        # move to the target position
-        self.space.step(0.0001)
-        self.observation = self._get_observation()
-
     def step(self, left_player_action):
+        # step the pymunk space a little so that the position to initial can work
+        self.space.step(10 ** -7)
+
         right_player_action = np.reshape(self.action_space.sample(), (-1, 2))
         left_player_action = np.reshape(left_player_action, (-1, 2))
 
@@ -240,7 +244,7 @@ class Futbol(gym.Env):
 
             goal_reward = 1000
             reward += goal_reward if bx > self.WIDTH - 2 else -goal_reward
-            self._position_to_initial()
+            self._set_position_to_initial()
             if self.goal_end:
                 done = True
             else:
