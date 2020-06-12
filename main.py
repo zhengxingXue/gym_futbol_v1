@@ -15,6 +15,7 @@ def main(video=True, title=True):
     if video:
         if title:
             record_video_with_title('futbol-v1', model, prefix=prefix)
+            show_video('videos/' + prefix + '.mp4')
         else:
             record_video('futbol-v1', model, video_length=record_length, prefix=prefix)
             show_video('videos/' + prefix + '-step-0-to-step-' + str(record_length) + '.mp4')

@@ -118,7 +118,7 @@ def record_video_with_title(env_id, model, prefix='test', video_folder='videos/'
     total_reward = 0
 
     while not done:
-    # for _ in range(1):
+    # for _ in range(50):
         action, _ = model.predict(obs)
         obs, reward, done, _ = env.step(action)
 

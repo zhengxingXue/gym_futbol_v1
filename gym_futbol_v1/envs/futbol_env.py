@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 from gym_futbol_v1.envs.team import Team
 from gym_futbol_v1.envs.helper import get_vec, setup_walls, normalize_array, Side, Ball, check_and_fix_out_bounds, ball_contact_goal
 from gym_futbol_v1.envs.action import process_action
+from gym_futbol_v1.envs.reward import Reward
 
 
 class Futbol(gym.Env):
@@ -127,6 +128,7 @@ class Futbol(gym.Env):
 
         self.current_time = 0
         self.observation = self.reset()
+        self.reward_class = Reward(self)
 
     def reset(self):
         """reset the simulation"""
@@ -206,7 +208,7 @@ class Futbol(gym.Env):
         right_player_action = np.reshape(self.action_space.sample(), (-1, 2))
         left_player_action = np.reshape(left_player_action, (-1, 2))
 
-        init_distance_arr = self._ball_to_team_distance_arr(self.team_A)
+        init_distance_arr = self.reward_class.ball_to_team_distance_arr(self.team_A)
 
         ball_init = self.ball.get_position()
 
@@ -234,8 +236,8 @@ class Futbol(gym.Env):
         if not out:
             ball_after = self.ball.get_position()
 
-            reward += self.get_team_reward(init_distance_arr, self.team_A)
-            reward += self.get_ball_reward(ball_init, ball_after)
+            reward += self.reward_class.get_team_reward(init_distance_arr, self.team_A)
+            reward += self.reward_class.get_ball_to_goal_reward(Side.left, ball_init, ball_after)
 
         if ball_contact_goal(self.ball, self.static_goal):
             bx, _ = self.ball.get_position()
@@ -254,31 +256,3 @@ class Futbol(gym.Env):
             done = True
 
         return self.observation, reward, done, {}
-
-    def _ball_to_team_distance_arr(self, team):
-        distance_arr = []
-        bx, by = self.ball.get_position()
-        for player in team.player_array:
-            px, py = player.get_position()
-            distance_arr.append(math.sqrt((px-bx)**2 + (py-by)**2))
-        return np.array(distance_arr)
-
-    def get_team_reward(self, init_distance_arr, team):
-        after_distance_arr = self._ball_to_team_distance_arr(team)
-        difference_arr = init_distance_arr - after_distance_arr
-        run_to_ball_reward_coefficient = 10
-
-        if self.number_of_player == 5:
-            return np.max([difference_arr[3], difference_arr[4]]) * run_to_ball_reward_coefficient
-        else:
-            return np.max(difference_arr) * run_to_ball_reward_coefficient
-
-    def get_ball_reward(self, ball_init, ball_after):
-        ball_to_goal_reward_coefficient = 10
-
-        goal = [self.WIDTH, self.HEIGHT/2]
-
-        _, ball_a_to_goal = get_vec(ball_after, goal)
-        _, ball_i_to_goal = get_vec(ball_init, goal)
-
-        return (ball_i_to_goal - ball_a_to_goal) * ball_to_goal_reward_coefficient
