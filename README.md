@@ -14,7 +14,7 @@ $ cd gym_futbol_v1
 $ pip install -e .
 ```
 
-To try the environment with PPO2 agent (without any training):
+To try the environment with PPO2 agent (trained 1M timestep):
 ```
 $ python main.py
 ```

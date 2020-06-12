@@ -9,12 +9,12 @@ from utils.video_utils import show_video, record_video, record_gif, record_video
 def main(video=True, title=True):
     env = gym.make("futbol-v1")
     check_env(env, warn=True)
-    model = PPO2(MlpPolicy, env, verbose=1)
-    prefix = 'ppo2-futbol-pre'
+    model = PPO2.load("supplement/ppo2-futbol-1M_best_model")
+    prefix = 'ppo2-futbol-1M-best'
     record_length = 300
     if video:
         if title:
-            record_video_with_title('futbol-v1', model, prefix='test')
+            record_video_with_title('futbol-v1', model, prefix=prefix)
         else:
             record_video('futbol-v1', model, video_length=record_length, prefix=prefix)
             show_video('videos/' + prefix + '-step-0-to-step-' + str(record_length) + '.mp4')
