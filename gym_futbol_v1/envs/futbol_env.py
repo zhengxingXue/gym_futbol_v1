@@ -10,13 +10,13 @@ import pymunk
 import pymunk.matplotlib_util
 import matplotlib.pyplot as plt
 from gym_futbol_v1.envs.team import Team
-from gym_futbol_v1.envs.helper import setup_walls, normalize_array, Side, Ball, check_and_fix_out_bounds, ball_contact_goal
+from gym_futbol_v1.envs.helper import setup_walls, normalize_array, Ball, check_and_fix_out_bounds, \
+    ball_contact_goal
 from gym_futbol_v1.envs.action import process_action
-from gym_futbol_v1.envs.reward import Reward
+from gym_futbol_v1.envs import Reward, Side, BaseAgent
 
 
 class Futbol(gym.Env):
-
     """
     Futbol is a 2D simulation of real world soccer.
     Soccer is a team sport played with a spherical ball between two teams of 11 players,
@@ -38,8 +38,8 @@ class Futbol(gym.Env):
         'video.frames_per_second': 10
     }
 
-    WIDTH = 105   # [m]
-    HEIGHT = 68   # [m]
+    WIDTH = 105  # [m]
+    HEIGHT = 68  # [m]
     GOAL_SIZE = 20  # [m]
 
     TOTAL_TIME = 30  # [s]
@@ -54,11 +54,10 @@ class Futbol(gym.Env):
     PLAYER_FORCE_LIMIT = 40
     BALL_FORCE_LIMIT = 120
 
-    def __init__(self, debug=False, number_of_player=2, normalize_obs=True, goal_end=False):
+    def __init__(self, debug=False, number_of_player=2, goal_end=False):
 
         self.debug = debug
         self.number_of_player = number_of_player
-        self.normalize_obs = normalize_obs
         self.goal_end = goal_end
 
         # action space
@@ -72,22 +71,21 @@ class Futbol(gym.Env):
         # [1] y position
         # [2] x velocity
         # [3] y velocity
-        if self.normalize_obs:
-            self.observation_space = spaces.Box(
-                low=np.array([-1., -1., -1., -1.] *
-                             (1+self.number_of_player * 2), dtype=np.float32),
-                high=np.array([1., 1., 1., 1.] *
-                              (1+self.number_of_player * 2), dtype=np.float32),
-                dtype=np.float32)
-        else:
-            self.observation_space = spaces.Box(
-                low=np.array([-3, 0, -self.BALL_MAX_VELOCITY, -self.BALL_MAX_VELOCITY] +
-                             [-3, 0, -self.PLAYER_MAX_VELOCITY, -self.PLAYER_MAX_VELOCITY] *
-                             (self.number_of_player * 2), dtype=np.float32),
-                high=np.array([self.WIDTH + 3, self.HEIGHT, self.BALL_MAX_VELOCITY, self.BALL_MAX_VELOCITY] +
-                              [self.WIDTH + 3, self.HEIGHT, self.PLAYER_MAX_VELOCITY, self.PLAYER_MAX_VELOCITY] *
-                              (self.number_of_player * 2), dtype=np.float32),
-                dtype=np.float32)
+        self.observation_space = spaces.Box(
+            low=np.array([-3, 0, -self.BALL_MAX_VELOCITY, -self.BALL_MAX_VELOCITY] +
+                         [-3, 0, -self.PLAYER_MAX_VELOCITY, -self.PLAYER_MAX_VELOCITY] *
+                         (self.number_of_player * 2), dtype=np.float32),
+            high=np.array([self.WIDTH + 3, self.HEIGHT, self.BALL_MAX_VELOCITY, self.BALL_MAX_VELOCITY] +
+                          [self.WIDTH + 3, self.HEIGHT, self.PLAYER_MAX_VELOCITY, self.PLAYER_MAX_VELOCITY] *
+                          (self.number_of_player * 2), dtype=np.float32),
+            dtype=np.float32)
+
+        self.normalized_observation_space = spaces.Box(
+             low=np.array([-1., -1., -1., -1.] *
+                          (1+self.number_of_player * 2), dtype=np.float32),
+             high=np.array([1., 1., 1., 1.] *
+                           (1+self.number_of_player * 2), dtype=np.float32),
+             dtype=np.float32)
 
         # create space
         self.space = pymunk.Space()
@@ -106,15 +104,19 @@ class Futbol(gym.Env):
                            player_weight=self.PLAYER_WEIGHT,
                            player_max_velocity=self.PLAYER_MAX_VELOCITY,
                            color=(1, 0, 0, 1),  # red
-                           side=Side("left"),
+                           side=Side.left,
                            player_number=self.number_of_player)
 
         self.team_B = Team(self.space, self.WIDTH, self.HEIGHT,
                            player_weight=self.PLAYER_WEIGHT,
                            player_max_velocity=self.PLAYER_MAX_VELOCITY,
                            color=(0, 0, 1, 1),  # blue
-                           side=Side("right"),
+                           side=Side.right,
                            player_number=self.number_of_player)
+
+        # Agents
+        self.team_A_agent = BaseAgent(self, Side.left)
+        self.team_B_agent = BaseAgent(self, Side.right)
 
         self.player_arr = self.team_A.player_array + self.team_B.player_array
 
@@ -135,7 +137,7 @@ class Futbol(gym.Env):
 
         # after set position, need to step the space so that the object
         # move to the target position
-        self.space.step(10**-7)
+        self.space.step(10 ** -7)
         self.observation = self._get_observation()
 
         return self.observation
@@ -166,32 +168,32 @@ class Futbol(gym.Env):
 
     def _get_observation(self):
         """get observation"""
-        if self.normalize_obs:
-            ball_max_arr = np.array(
-                [self.WIDTH + 3, self.HEIGHT, self.BALL_MAX_VELOCITY, self.BALL_MAX_VELOCITY])
-            ball_min_arr = np.array(
-                [-3, 0, -self.BALL_MAX_VELOCITY, -self.BALL_MAX_VELOCITY])
-
-            player_max_arr = np.array(
-                [self.WIDTH + 3, self.HEIGHT, self.PLAYER_MAX_VELOCITY, self.PLAYER_MAX_VELOCITY])
-            player_min_arr = np.array(
-                [-3, 0, -self.PLAYER_MAX_VELOCITY, -self.PLAYER_MAX_VELOCITY])
-
-            ball_observation = normalize_array(
-                np.array(self.ball.get_observation()), ball_max_arr, ball_min_arr)
-
-            team_A_observation = normalize_array(
-                self.team_A.get_observation(), player_max_arr, player_min_arr, self.number_of_player)
-            team_B_observation = normalize_array(
-                self.team_B.get_observation(), player_max_arr, player_min_arr, self.number_of_player)
-        else:
-            ball_observation = self.ball.get_observation()
-            team_A_observation = self.team_A.get_observation()
-            team_B_observation = self.team_B.get_observation()
+        ball_observation = self.ball.get_observation()
+        team_A_observation = self.team_A.get_observation()
+        team_B_observation = self.team_B.get_observation()
         # flatten obs
         obs = np.concatenate(
             (ball_observation, team_A_observation, team_B_observation))
         return obs
+
+    def normalize_observation_array(self, obs):
+        """
+        normalize the input observation array
+        """
+        ball_max_arr = np.array(
+            [self.WIDTH + 3, self.HEIGHT, self.BALL_MAX_VELOCITY, self.BALL_MAX_VELOCITY])
+        ball_min_arr = np.array(
+            [-3, 0, -self.BALL_MAX_VELOCITY, -self.BALL_MAX_VELOCITY])
+
+        player_max_arr = np.array(
+            [self.WIDTH + 3, self.HEIGHT, self.PLAYER_MAX_VELOCITY, self.PLAYER_MAX_VELOCITY])
+        player_min_arr = np.array(
+            [-3, 0, -self.PLAYER_MAX_VELOCITY, -self.PLAYER_MAX_VELOCITY])
+
+        max_arr = np.concatenate((ball_max_arr, np.tile(player_max_arr, self.number_of_player * 2)))
+        min_arr = np.concatenate((ball_min_arr, np.tile(player_min_arr, self.number_of_player * 2)))
+        normalized_observation = normalize_array(obs, max_arr, min_arr)
+        return normalized_observation
 
     def _set_position_to_initial(self):
         """position ball and player to the initial position and set their velocity to 0"""
@@ -203,15 +205,17 @@ class Futbol(gym.Env):
         self.ball.body.velocity = 0, 0
 
     def step(self, team_action, team_side=Side.left):
-
+        # left = team_A
+        # right = team_B
+        # need further modification
         if team_side == Side.left:
-            right_player_action = np.reshape(self.action_space.sample(), (-1, 2))
-            left_player_action = np.reshape(team_action, (-1, 2))
+            left_player_action = team_action
             team = self.team_A
+            right_player_action, _ = self.team_B_agent.predict(self.observation)
         else:
-            right_player_action = np.reshape(team_action, (-1, 2))
-            left_player_action = np.reshape(self.action_space.sample(), (-1, 2))
+            right_player_action = team_action
             team = self.team_B
+            left_player_action, _ = self.team_A_agent.predict(self.observation)
 
         init_distance_arr = self.reward_class.ball_to_team_distance_arr(team)
 
@@ -220,7 +224,7 @@ class Futbol(gym.Env):
         done = False
         reward = 0
 
-        action_arr = np.concatenate((left_player_action, right_player_action))
+        action_arr = np.concatenate((left_player_action, right_player_action)).reshape((-1,2))
 
         for player, action in zip(self.player_arr, action_arr):
             process_action(self, player, action)
