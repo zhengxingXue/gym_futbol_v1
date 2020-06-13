@@ -8,7 +8,7 @@ import logging
 logging.getLogger('tensorflow').setLevel(logging.ERROR)
 
 
-def ppo2_training_mlp(env_id='futbol-v1', env_n=8, time_step=10**5, save_dir_prefix='./training/logs/MlpPolicy'):
+def ppo2_mlp_policy_train(env_id='futbol-v1', env_n=8, time_step=10**5, save_dir_prefix='./training/logs/MlpPolicy'):
     """
     :param env_id: id of the environment
     :param env_n: number of env for the PPO2 model
@@ -31,4 +31,4 @@ def ppo2_training_mlp(env_id='futbol-v1', env_n=8, time_step=10**5, save_dir_pre
 
 
 if __name__ == "__main__":
-    _ = ppo2_training_mlp()
+    _ = ppo2_mlp_policy_train()
