@@ -156,6 +156,14 @@ def notebook_render_helper(env, total_reward, reward, action):
 
 
 def notebook_render_simple(env, length=300, random=True, action=np.array([0, 0, 0, 0]), side=Side.left):
+    """
+    :param env: environment
+    :param length: render length
+    :param random: whether the side act randomly
+    :param action: if the random is false, the action user want the side to act
+    :param side: action side
+    :return: total reward
+    """
     total_reward = 0
     for _ in range(length):
         if random:
@@ -171,6 +179,13 @@ def notebook_render_simple(env, length=300, random=True, action=np.array([0, 0, 
 
 
 def notebook_render_mlp(env_id, model, length=300, side=Side.left):
+    """
+    :param env_id: environment id
+    :param model: model for rendering
+    :param length: render length
+    :param side: action side
+    :return: total reward
+    """
     env = gym.make(env_id)
     done = False
     total_reward = 0
@@ -189,11 +204,19 @@ def notebook_render_mlp(env_id, model, length=300, side=Side.left):
     return total_reward
 
 
-def notebook_render_lstm(env_id, model, n_env=8, length=300, side=Side.left):
+def notebook_render_lstm(env_id, model, length=300, side=Side.left):
+    """
+    :param env_id: environment id
+    :param model: model for rendering
+    :param length: render length
+    :param side: action side
+    :return: total reward
+    """
     env = gym.make(env_id)
     done = False
     total_reward = 0
     obs = env.reset()
+    n_env = model.n_envs
     _, state = model.predict(np.tile(obs, (n_env, 1)), deterministic=False)
     i = 0
     while not done:
