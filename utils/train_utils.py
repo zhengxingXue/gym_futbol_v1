@@ -69,16 +69,37 @@ class NormalizeObservationWrapper(gym.Wrapper):
     """
 
     def __init__(self, env):
-        env.observation_space = env.get_normalized_observation_space()
+        env.observation_space = spaces.Box(
+            low=np.array([-1., -1., -1., -1.] *
+                         (1 + env.number_of_player * 2), dtype=np.float32),
+            high=np.array([1., 1., 1., 1.] *
+                          (1 + env.number_of_player * 2), dtype=np.float32),
+            dtype=np.float32)
         # Call the parent constructor, so we can access self.env later
         super(NormalizeObservationWrapper, self).__init__(env)
+
+        ball_max_arr = np.array(
+            [env.WIDTH + 3, env.HEIGHT, env.BALL_MAX_VELOCITY, env.BALL_MAX_VELOCITY])
+        ball_min_arr = np.array(
+            [-3, 0, -env.BALL_MAX_VELOCITY, -env.BALL_MAX_VELOCITY])
+
+        player_max_arr = np.array(
+            [env.WIDTH + 3, env.HEIGHT, env.PLAYER_MAX_VELOCITY, env.PLAYER_MAX_VELOCITY])
+        player_min_arr = np.array(
+            [-3, 0, -env.PLAYER_MAX_VELOCITY, -env.PLAYER_MAX_VELOCITY])
+
+        max_arr = np.concatenate((ball_max_arr, np.tile(player_max_arr, self.number_of_player * 2)))
+        min_arr = np.concatenate((ball_min_arr, np.tile(player_min_arr, self.number_of_player * 2)))
+
+        self.avg_arr = (max_arr + min_arr) / 2
+        self.range_arr = (min_arr - max_arr) / 2
 
     def reset(self):
         """
         Reset the environment
         """
         obs = self.env.reset()
-        obs = self.env.normalize_observation_array(obs)
+        obs = (obs - self.avg_arr) / self.range_arr
         return obs
 
     def step(self, action, team_side=Side.left):
@@ -88,7 +109,7 @@ class NormalizeObservationWrapper(gym.Wrapper):
         :return: (np.ndarray, float, bool, dict) observation, reward, is the episode over?, additional informations
         """
         obs, reward, done, info = self.env.step(action, team_side)
-        obs = self.env.normalize_observation_array(obs)
+        obs = (obs - self.avg_arr) / self.range_arr
         # reward /= 1000
         return obs, reward, done, info
 

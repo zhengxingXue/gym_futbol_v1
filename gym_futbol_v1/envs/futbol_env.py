@@ -236,34 +236,3 @@ class Futbol(gym.Env):
 
         # set the ball velocity to zero
         self.ball.body.velocity = 0, 0
-
-    def get_normalized_observation_space(self):
-        """
-        get the normalized obbservation space
-        """
-        normalized_observation_space = spaces.Box(
-            low=np.array([-1., -1., -1., -1.] *
-                         (1 + self.number_of_player * 2), dtype=np.float32),
-            high=np.array([1., 1., 1., 1.] *
-                          (1 + self.number_of_player * 2), dtype=np.float32),
-            dtype=np.float32)
-        return normalized_observation_space
-
-    def normalize_observation_array(self, obs):
-        """
-        normalize the input observation array
-        """
-        ball_max_arr = np.array(
-            [self.WIDTH + 3, self.HEIGHT, self.BALL_MAX_VELOCITY, self.BALL_MAX_VELOCITY])
-        ball_min_arr = np.array(
-            [-3, 0, -self.BALL_MAX_VELOCITY, -self.BALL_MAX_VELOCITY])
-
-        player_max_arr = np.array(
-            [self.WIDTH + 3, self.HEIGHT, self.PLAYER_MAX_VELOCITY, self.PLAYER_MAX_VELOCITY])
-        player_min_arr = np.array(
-            [-3, 0, -self.PLAYER_MAX_VELOCITY, -self.PLAYER_MAX_VELOCITY])
-
-        max_arr = np.concatenate((ball_max_arr, np.tile(player_max_arr, self.number_of_player * 2)))
-        min_arr = np.concatenate((ball_min_arr, np.tile(player_min_arr, self.number_of_player * 2)))
-        normalized_observation = normalize_array(obs, max_arr, min_arr)
-        return normalized_observation
