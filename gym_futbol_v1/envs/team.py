@@ -21,6 +21,8 @@ class Team:
 
         self.player_number = player_number
 
+        self.score = 0
+
         self._create_pos_array(player_number, side, width, height)
         self._create_color_array(color, player_number)
 
@@ -33,6 +35,10 @@ class Team:
                        max_velocity=player_max_velocity,
                        elasticity=elasticity,
                        side=side))
+
+    def add_score(self): self.score += 1
+
+    def reset_score(self): self.score = 0
 
     # only implemented with red and blue
     def _create_color_array(self, color, player_number):

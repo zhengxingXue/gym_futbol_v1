@@ -132,6 +132,10 @@ class Futbol(gym.Env):
         self.space.step(10 ** -7)
         self.observation = self._get_observation()
 
+        # reset team score
+        self.team_A.reset_score()
+        self.team_B.reset_score()
+
         return self.observation
 
     def render(self, mode='human'):
@@ -235,3 +239,9 @@ class Futbol(gym.Env):
 
         # set the ball velocity to zero
         self.ball.body.velocity = 0, 0
+
+    def get_score(self):
+        """
+        :return: score string
+        """
+        return "Team A : Team B = " + str(self.team_A.score) + " : " + str(self.team_B.score)

@@ -69,9 +69,10 @@ def record_gif(env_id, model, video_length=300, prefix='env', video_folder='vide
     imageio.mimsave(video_folder + prefix + '.gif', [np.array(img) for img in images], fps=fps)
 
 
-def get_title_str(total_reward, reward, n_player, action):
+def get_title_str(env, total_reward, reward, n_player, action):
     title_str = "total reward : " + str(total_reward)
     title_str += "\ncurrent reward : " + str(reward)
+    title_str += "\n" + env.get_score()
 
     for i in range(n_player):
         title_str += "\nplayer " + str(i) + " action : " + action_key_string(
@@ -92,7 +93,7 @@ def render_helper(env, action, total_reward, reward):
     env.space.debug_draw(o)
 
     total_reward += reward
-    title_str = get_title_str(total_reward, reward, env.number_of_player, action)
+    title_str = get_title_str(env, total_reward, reward, env.number_of_player, action)
     plt.title(title_str, loc='left')
     plt.axis('off')
     plt.tight_layout()
@@ -144,7 +145,7 @@ def record_video_with_title(env_id, model, prefix='test', video_folder='videos/'
 
 def notebook_render_helper(env, total_reward, reward, action):
     plt.clf()
-    title_str = get_title_str(total_reward, reward, env.number_of_player, action)
+    title_str = get_title_str(env, total_reward, reward, env.number_of_player, action)
     padding = 5
     ax = plt.axes(xlim=(0 - padding, env.WIDTH + padding), ylim=(0 - padding, env.HEIGHT + padding))
     ax.set_aspect("equal")

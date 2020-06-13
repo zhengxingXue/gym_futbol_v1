@@ -55,6 +55,14 @@ class Reward:
         bx, _ = self.env.ball.get_position()
         reward = self.goal_reward if bx > self.env.WIDTH - 2 else -self.goal_reward
         if side == Side.left:
+            if self.env.team_A.side == Side.left:
+                self.env.teamA.add_score()
+            else:
+                self.env.teamB.add_score()
             return reward
         else:
+            if self.env.team_A.side == Side.left:
+                self.env.teamB.add_score()
+            else:
+                self.env.teamA.add_score()
             return -reward
