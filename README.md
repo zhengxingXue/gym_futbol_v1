@@ -31,15 +31,18 @@ env.render()
 
 ## Training
 
-To train the ``futbol`` environment with PPO2(MlpPolicy) algorithm:
+To train the ``futbol`` environment with PPO2(MlpPolicy) algorithm for 100,000 time step:
 ```commandline
 python training/ppo2_mlp_policy.py
 ```
 The trained model and best model during the training are saved in ``training/logs/MlpPolicy-{time}`` directory.
 
-
-
 ## Examples
+
+``tutorial.ipynb`` has example for training, to start:
+```commandline
+jupyter notebook tutorial.ipynb 
+```
 
 Recording of initialized PPO2 agent vs. random opponents:
 
