@@ -41,7 +41,7 @@ env.render()
 
 To train the ``futbol`` environment with PPO2(MlpPolicy) algorithm for 100,000 time step:
 ```commandline
-python training/ppo2_mlp_policy.py
+python training/ppo2_mlp_policy.py --timestep 100000
 ```
 The trained model and best model during the training are saved in ``training/logs/MlpPolicy-{time}`` directory.
 
