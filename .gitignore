@@ -143,3 +143,9 @@ Thumbs.db
 
 # videos folder
 videos/
+
+# training tmp folder
+training/tmp/
+
+# training log folder
+training/logs/

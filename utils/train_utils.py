@@ -1,4 +1,7 @@
 from stable_baselines.common.policies import FeedForwardPolicy
+from stable_baselines.common.vec_env import DummyVecEnv
+from stable_baselines.bench import Monitor
+from stable_baselines.common.callbacks import EvalCallback
 import gym
 import numpy as np
 from gym import spaces
@@ -29,6 +32,35 @@ def create_custom_policy(net_arch):
             super(CustomPolicy, self).__init__(*args, **kwargs, net_arch=net_arch, feature_extraction="mlp")
 
     return CustomPolicy
+
+
+def create_n_env(env_id, log_dir='./temp', num_envs=8):
+    """
+    :param env_id: 'futbol-v1'
+    :param log_dir: log directory
+    :param num_envs: number of environment
+    :return: DummyVecEnv for training
+    """
+    env = gym.make(env_id)
+    env = Monitor(env, log_dir, allow_early_resets=True)
+    env = DummyVecEnv([lambda: env] * num_envs)
+    return env
+
+
+def create_eval_callback(env_id, save_dir='./logs', eval_freq=1000, n_eval_episodes=10):
+    """
+    :param env_id: 'futbol-v1'
+    :param save_dir: the directory to save the best model
+    :param eval_freq: the frequency of the evaluation callback
+    :param n_eval_episodes: the number  of evaluation of each callback
+    :return: EvalCallback for training
+    """
+    eval_env = gym.make(env_id)
+    eval_callback = EvalCallback(eval_env, best_model_save_path=save_dir,
+                                 log_path=save_dir,
+                                 eval_freq=eval_freq, n_eval_episodes=n_eval_episodes,
+                                 deterministic=False, render=False)
+    return eval_callback
 
 
 class NormalizeObservationWrapper(gym.Wrapper):
