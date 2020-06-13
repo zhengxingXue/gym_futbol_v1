@@ -1,9 +1,10 @@
 # gym_futbol_v1
 
-## Overview
+<img src="supplement/ppo2-futbol-best.gif" alt="simulation recording" width="500" />
+
 This project is a 2D simulation of real world soccer.
 
-It contiunes the work on gym-futbol(https://github.com/yc2454/gym-futbol).
+It continues the work on gym-futbol(https://github.com/yc2454/gym-futbol).
 
 ## Quick start
 
@@ -19,6 +20,11 @@ To try the environment with PPO2 agent (trained 1M timestep):
 python main.py
 ```
 The simulation is recorded and showed in the pop up window. The video file is saved in ``videos/`` directory.
+
+``tutorial.ipynb`` contains example for training, to start:
+```commandline
+jupyter notebook tutorial.ipynb 
+```
 
 ## Env
 
@@ -38,11 +44,6 @@ python training/ppo2_mlp_policy.py
 The trained model and best model during the training are saved in ``training/logs/MlpPolicy-{time}`` directory.
 
 ## Examples
-
-``tutorial.ipynb`` has example for training, to start:
-```commandline
-jupyter notebook tutorial.ipynb 
-```
 
 Recording of initialized PPO2 agent vs. random opponents:
 
