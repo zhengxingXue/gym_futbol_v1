@@ -1,3 +1,5 @@
+import time
+import os
 from stable_baselines.common.policies import FeedForwardPolicy
 from stable_baselines.common.vec_env import DummyVecEnv
 from stable_baselines.bench import Monitor
@@ -6,6 +8,10 @@ import gym
 import numpy as np
 from gym import spaces
 from gym_futbol_v1.envs import Side
+from stable_baselines import PPO2
+import tensorflow
+import logging
+logging.getLogger('tensorflow').setLevel(logging.ERROR)
 
 
 class CustomPolicy2v2(FeedForwardPolicy):
@@ -61,6 +67,39 @@ def create_eval_callback(env_id, save_dir='./logs', eval_freq=1000, n_eval_episo
                                  eval_freq=eval_freq, n_eval_episodes=n_eval_episodes,
                                  deterministic=False, render=False)
     return eval_callback
+
+
+def ppo2_train(policy, policy_name, env_id='futbol-v1', env_n=8, time_step=10**5, save_dir_prefix='./training/logs',
+               enable_call_back=True):
+    """
+    :param policy: stable-baseline policy
+    :param policy_name: string of policy name
+    :param env_id: id of the environment
+    :param env_n: number of env for the PPO2 model
+    :param time_step: total time step for training
+    :param save_dir_prefix: prefix of directory to save trained model and best model
+    :param enable_call_back: whether to use the eval call back
+    :return: (PPO2, str)the trained ppo2 model, and the save directory
+    """
+    time_str = "{}".format(int(time.time()))
+    log_dir = "./training/tmp/" + policy_name + '-' + time_str
+    os.makedirs(log_dir, exist_ok=True)
+    env = create_n_env(env_id, log_dir, env_n)
+
+    save_dir = save_dir_prefix + '/' + policy_name + '-' + time_str
+    os.makedirs(save_dir, exist_ok=True)
+
+    model = PPO2(policy, env, verbose=1)
+    if enable_call_back:
+        eval_callback = create_eval_callback(env_id, save_dir=save_dir)
+        model.learn(total_timesteps=time_step, callback=eval_callback)
+    else:
+        model.learn(total_timesteps=time_step)
+
+    model_path = save_dir + '/' + policy_name
+    model.save(model_path)
+    print("model saved to " + model_path + '.zip')
+    return model, save_dir
 
 
 class NormalizeObservationWrapper(gym.Wrapper):

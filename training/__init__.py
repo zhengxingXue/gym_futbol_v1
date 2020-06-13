@@ -1,1 +1,2 @@
 from training.ppo2_mlp_policy import ppo2_mlp_policy_train
+from training.ppo2_lstm_policy import ppo2_mlp_lstm_policy_train
