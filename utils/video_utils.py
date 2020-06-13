@@ -9,6 +9,8 @@ import pymunk
 import numpy as np
 import matplotlib.pyplot as plt
 from gym_futbol_v1.envs.action import action_key_string, arrow_key_string
+from IPython import display
+from gym_futbol_v1.envs import Side
 
 
 def show_video(name):
@@ -67,6 +69,17 @@ def record_gif(env_id, model, video_length=300, prefix='env', video_folder='vide
     imageio.mimsave(video_folder + prefix + '.gif', [np.array(img) for img in images], fps=fps)
 
 
+def get_title_str(total_reward, reward, n_player, action):
+    title_str = "total reward : " + str(total_reward)
+    title_str += "\ncurrent reward : " + str(reward)
+
+    for i in range(n_player):
+        title_str += "\nplayer " + str(i) + " action : " + action_key_string(
+            action[2 * i + 1]) + " arrow : " + arrow_key_string(action[2 * i])
+
+    return title_str
+
+
 def render_helper(env, action, total_reward, reward):
     # plot the current state
     padding = 5
@@ -79,12 +92,7 @@ def render_helper(env, action, total_reward, reward):
     env.space.debug_draw(o)
 
     total_reward += reward
-    title_str = "total reward : " + str(total_reward)
-    title_str += "\ncurrent reward : " + str(reward)
-
-    for i in range(env.number_of_player):
-        title_str += "\nplayer " + str(i) + " action : " + action_key_string(
-            action[2 * i + 1]) + " arrow : " + arrow_key_string(action[2 * i])
+    title_str = get_title_str(total_reward, reward, env.number_of_player, action)
     plt.title(title_str, loc='left')
     plt.axis('off')
     plt.tight_layout()
@@ -107,7 +115,7 @@ def render_helper(env, action, total_reward, reward):
 def record_video_with_title(env_id, model, prefix='test', video_folder='videos/'):
     env = gym.make(env_id)
     obs = env.reset()
-    img, _ = render_helper(env, [0, 0]*env.number_of_player, 0, 0)
+    img, _ = render_helper(env, [0, 0] * env.number_of_player, 0, 0)
 
     video_folder = os.path.abspath(video_folder)
     # Create output folder if needed
@@ -123,7 +131,7 @@ def record_video_with_title(env_id, model, prefix='test', video_folder='videos/'
     total_reward = 0
 
     while not done:
-    # for _ in range(50):
+        # for _ in range(50):
         action, _ = model.predict(obs)
         obs, reward, done, _ = env.step(action)
 
@@ -132,3 +140,71 @@ def record_video_with_title(env_id, model, prefix='test', video_folder='videos/'
         out.write(img)
 
     out.release()
+
+
+def notebook_render_helper(env, total_reward, reward, action):
+    plt.clf()
+    title_str = get_title_str(total_reward, reward, env.number_of_player, action)
+    padding = 5
+    ax = plt.axes(xlim=(0 - padding, env.WIDTH + padding), ylim=(0 - padding, env.HEIGHT + padding))
+    ax.set_aspect("equal")
+    o = pymunk.matplotlib_util.DrawOptions(ax)
+    env.space.debug_draw(o)
+    plt.title(title_str, loc='left')
+    display.display(plt.gcf())
+    display.clear_output(wait=True)
+
+
+def notebook_render_simple(env, length=300, random=True, action=np.array([0, 0, 0, 0]), side=Side.left):
+    total_reward = 0
+    for _ in range(length):
+        if random:
+            action = np.reshape(env.action_space.sample(), -1)
+        else:
+            action = action
+        ob, reward, _, _ = env.step(action, team_side=side)
+        total_reward += reward
+
+        notebook_render_helper(env, total_reward, reward, action)
+
+    return total_reward
+
+
+def notebook_render_mlp(env_id, model, length=300, side=Side.left):
+    env = gym.make(env_id)
+    done = False
+    total_reward = 0
+    obs = env.reset()
+    i = 0
+    while not done:
+        action, _ = model.predict(obs)
+        ob, reward, _, _ = env.step(action, team_side=side)
+        total_reward += reward
+
+        notebook_render_helper(env, total_reward, reward, action)
+
+        i += 1
+        if i > length:
+            break
+    return total_reward
+
+
+def notebook_render_lstm(env_id, model, n_env=8, length=300, side=Side.left):
+    env = gym.make(env_id)
+    done = False
+    total_reward = 0
+    obs = env.reset()
+    _, state = model.predict(np.tile(obs, (n_env, 1)), deterministic=False)
+    i = 0
+    while not done:
+        action, state = model.predict(np.tile(obs, (n_env, 1)), state=state, deterministic=False)
+        action = action[0]
+        obs, reward, done, info = env.step(action, team_side=side)
+
+        total_reward += reward
+        notebook_render_helper(env, total_reward, reward, action)
+
+        i += 1
+        if i > length:
+            break
+    return total_reward

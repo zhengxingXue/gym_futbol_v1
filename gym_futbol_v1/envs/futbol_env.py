@@ -10,8 +10,7 @@ import pymunk
 import pymunk.matplotlib_util
 import matplotlib.pyplot as plt
 from gym_futbol_v1.envs.team import Team
-from gym_futbol_v1.envs.helper import setup_walls, normalize_array, Ball, check_and_fix_out_bounds, \
-    ball_contact_goal
+from gym_futbol_v1.envs.helper import setup_walls, Ball, check_and_fix_out_bounds, ball_contact_goal
 from gym_futbol_v1.envs.action import process_action
 from gym_futbol_v1.envs import Reward, Side, BaseAgent
 
