@@ -1,10 +1,12 @@
 # gym_futbol_v1
 
-<img src="supplement/ppo2-futbol-best.gif" alt="simulation recording" width="500" />
-
 This project is a 2D simulation of real world soccer.
 
 It continues the work on gym-futbol(https://github.com/yc2454/gym-futbol).
+
+<img src="supplement/ppo2-futbol-best.gif" alt="simulation recording" width="500" />
+
+Trained PPO2 agent on the left (red). Random action agent on the right (blue).
 
 ## Quick start
 
