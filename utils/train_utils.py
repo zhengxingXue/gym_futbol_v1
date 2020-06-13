@@ -36,7 +36,7 @@ class NormalizeObservationWrapper(gym.Wrapper):
     """
 
     def __init__(self, env):
-        observation_space = env.get_normalized_observation_space()
+        env.observation_space = env.get_normalized_observation_space()
         # Call the parent constructor, so we can access self.env later
         super(NormalizeObservationWrapper, self).__init__(env)
 
@@ -68,7 +68,7 @@ class AddHeightWidthObservationWrapper(gym.Wrapper):
         self.width_height_array = np.array([env.WIDTH, env.HEIGHT])
         low = np.concatenate((env.obs_low, self.width_height_array))
         high = np.concatenate((env.obs_high, self.width_height_array))
-        observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
+        env.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
         # Call the parent constructor, so we can access self.env later
         super(AddHeightWidthObservationWrapper, self).__init__(env)
