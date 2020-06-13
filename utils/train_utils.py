@@ -2,6 +2,7 @@ from stable_baselines.common.policies import FeedForwardPolicy
 import gym
 import numpy as np
 from gym import spaces
+from gym_futbol_v1.envs import Side
 
 
 class CustomPolicy2v2(FeedForwardPolicy):
@@ -48,12 +49,13 @@ class NormalizeObservationWrapper(gym.Wrapper):
         obs = self.env.normalize_observation_array(obs)
         return obs
 
-    def step(self, action):
+    def step(self, action, team_side=Side.left):
         """
         :param action: ([float] or int) Action taken by the agent
+        :param team_side: team side for the action
         :return: (np.ndarray, float, bool, dict) observation, reward, is the episode over?, additional informations
         """
-        obs, reward, done, info = self.env.step(action)
+        obs, reward, done, info = self.env.step(action, team_side)
         obs = self.env.normalize_observation_array(obs)
         # reward /= 1000
         return obs, reward, done, info
@@ -81,12 +83,13 @@ class AddHeightWidthObservationWrapper(gym.Wrapper):
         obs = np.concatenate((obs, self.width_height_array))
         return obs
 
-    def step(self, action):
+    def step(self, action, team_side=Side.left):
         """
         :param action: ([float] or int) Action taken by the agent
+        :param team_side: team side for the action
         :return: (np.ndarray, float, bool, dict) observation, reward, is the episode over?, additional informations
         """
-        obs, reward, done, info = self.env.step(action)
+        obs, reward, done, info = self.env.step(action, team_side)
         obs = np.concatenate((obs, self.width_height_array))
 
         return obs, reward, done, info
