@@ -92,25 +92,25 @@ class Futbol(gym.Env):
             self.space, self.WIDTH, self.HEIGHT, self.GOAL_SIZE)
 
         # Teams
-        self.team_A = Team(self.space, self.WIDTH, self.HEIGHT,
-                           player_weight=self.PLAYER_WEIGHT,
-                           player_max_velocity=self.PLAYER_MAX_VELOCITY,
-                           color=(1, 0, 0, 1),  # red
-                           side=Side.left,
-                           player_number=self.number_of_player)
+        self.team_left = Team(self.space, self.WIDTH, self.HEIGHT,
+                              player_weight=self.PLAYER_WEIGHT,
+                              player_max_velocity=self.PLAYER_MAX_VELOCITY,
+                              color=(1, 0, 0, 1),  # red
+                              side=Side.left,
+                              player_number=self.number_of_player)
 
-        self.team_B = Team(self.space, self.WIDTH, self.HEIGHT,
-                           player_weight=self.PLAYER_WEIGHT,
-                           player_max_velocity=self.PLAYER_MAX_VELOCITY,
-                           color=(0, 0, 1, 1),  # blue
-                           side=Side.right,
-                           player_number=self.number_of_player)
+        self.team_right = Team(self.space, self.WIDTH, self.HEIGHT,
+                               player_weight=self.PLAYER_WEIGHT,
+                               player_max_velocity=self.PLAYER_MAX_VELOCITY,
+                               color=(0, 0, 1, 1),  # blue
+                               side=Side.right,
+                               player_number=self.number_of_player)
 
         # Agents
-        self.team_A_agent = BaseAgent(self, Side.left)
-        self.team_B_agent = BaseAgent(self, Side.right)
+        self.team_left_agent = BaseAgent(self, Side.left)
+        self.team_right_agent = BaseAgent(self, Side.right)
 
-        self.player_arr = self.team_A.player_array + self.team_B.player_array
+        self.player_arr = self.team_left.player_array + self.team_right.player_array
 
         # Ball
         self.ball = Ball(self.space, self.WIDTH * 0.5, self.HEIGHT * 0.5,
@@ -133,8 +133,8 @@ class Futbol(gym.Env):
         self.observation = self._get_observation()
 
         # reset team score
-        self.team_A.reset_score()
-        self.team_B.reset_score()
+        self.team_left.reset_score()
+        self.team_right.reset_score()
 
         return self.observation
 
@@ -163,17 +163,17 @@ class Futbol(gym.Env):
             return img
 
     def step(self, team_action, team_side=Side.left):
-        # left = team_A
-        # right = team_B
+        # left = team_left
+        # right = team_right
         # need further modification
         if team_side == Side.left:
             left_player_action = team_action
-            team = self.team_A
-            right_player_action, _ = self.team_B_agent.predict(self.observation)
+            team = self.team_left
+            right_player_action, _ = self.team_right_agent.predict(self.observation)
         else:
             right_player_action = team_action
-            team = self.team_B
-            left_player_action, _ = self.team_A_agent.predict(self.observation)
+            team = self.team_right
+            left_player_action, _ = self.team_left_agent.predict(self.observation)
 
         init_distance_arr = self.reward_class.ball_to_team_distance_arr(team)
 
@@ -193,7 +193,7 @@ class Futbol(gym.Env):
                 pass
 
         # fix the out of bound situation
-        out = check_and_fix_out_bounds(self.ball, self.static, self.team_A, self.team_B)
+        out = check_and_fix_out_bounds(self.ball, self.static, self.team_left, self.team_right)
 
         # step environment using pymunk
         self.space.step(self.TIME_STEP)
@@ -208,6 +208,11 @@ class Futbol(gym.Env):
 
         if ball_contact_goal(self.ball, self.static_goal):
             reward += self.reward_class.get_goal_reward(team_side)
+            bx, _ = self.ball.get_position()
+            if bx > self.WIDTH - 2:
+                self.team_left.add_score()
+            else:
+                self.team_right.add_score()
             self._set_position_to_initial()
             if self.goal_end:
                 done = True
@@ -224,17 +229,17 @@ class Futbol(gym.Env):
     def _get_observation(self):
         """get observation"""
         ball_observation = self.ball.get_observation()
-        team_A_observation = self.team_A.get_observation()
-        team_B_observation = self.team_B.get_observation()
+        team_left_observation = self.team_left.get_observation()
+        team_right_observation = self.team_right.get_observation()
         # flatten obs
         obs = np.concatenate(
-            (ball_observation, team_A_observation, team_B_observation))
+            (ball_observation, team_left_observation, team_right_observation))
         return obs
 
     def _set_position_to_initial(self):
         """position ball and player to the initial position and set their velocity to 0"""
-        self.team_A.set_position_to_initial()
-        self.team_B.set_position_to_initial()
+        self.team_left.set_position_to_initial()
+        self.team_right.set_position_to_initial()
         self.ball.set_position(self.WIDTH * 0.5, self.HEIGHT * 0.5)
 
         # set the ball velocity to zero
@@ -244,4 +249,4 @@ class Futbol(gym.Env):
         """
         :return: score string
         """
-        return "Team A : Team B = " + str(self.team_A.score) + " : " + str(self.team_B.score)
+        return "Team left : Team right = " + str(self.team_left.score) + " : " + str(self.team_right.score)

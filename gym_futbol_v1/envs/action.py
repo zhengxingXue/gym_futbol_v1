@@ -135,7 +135,7 @@ def process_action(self, player, action):
     # pass [4]
     elif action[1] == 4:
         if self.ball.has_contact_with(player):
-            team = self.team_A if player.side == Side("left") else self.team_B
+            team = self.team_left if player.side == Side.left else self.team_right
 
             target_player = team.get_pass_target_teammate(
                 player, arrow_keys=action[0])
