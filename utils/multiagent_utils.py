@@ -95,7 +95,7 @@ def ppo2_multi_agent_train(policy, policy_name, env_id='futbol-v1', env_n=8, tim
                                        set_model=False, model=None, model_side=None)
     model_right = PPO2(policy, env_right, verbose=verbose)
 
-    save_dir = save_dir_prefix + '/' + policy_name + 'multi-agent-' + time_str
+    save_dir = save_dir_prefix + '/' + policy_name + '-multi-agent-' + time_str
     os.makedirs(save_dir, exist_ok=True)
 
     for i in range(num_turn):
