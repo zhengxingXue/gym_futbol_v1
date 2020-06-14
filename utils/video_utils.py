@@ -181,19 +181,17 @@ def notebook_render_simple(env, length=300, random=True, action=np.array([0, 0, 
     return total_reward
 
 
-def notebook_render_mlp(env_id, model, length=300, side=Side.left, env=None):
+def notebook_render_mlp(env, model, length=300, side=Side.left):
     """
-    :param env_id: environment id
+    :param env: (str or gym.env) if env is string use gym.make() else directly use env
     :param model: model for rendering
     :param length: render length
     :param side: action side
     :param env: if env is specified, use env
     :return: total reward
     """
-    if env is None:
-        env = gym.make(env_id)
-    else:
-        env = env
+    if isinstance(env, str):
+        env = gym.make(env)
     done = False
     total_reward = 0
     obs = env.reset()
@@ -211,19 +209,17 @@ def notebook_render_mlp(env_id, model, length=300, side=Side.left, env=None):
     return total_reward
 
 
-def notebook_render_lstm(env_id, model, length=300, side=Side.left, env=None):
+def notebook_render_lstm(env, model, length=300, side=Side.left):
     """
-    :param env_id: environment id
+    :param env: (str or gym.env) if env is string use gym.make() else directly use env
     :param model: model for rendering
     :param length: render length
     :param side: action side
     :param env: if env is specified, use env
     :return: total reward
     """
-    if env is None:
-        env = gym.make(env_id)
-    else:
-        env = env
+    if isinstance(env, str):
+        env = gym.make(env)
     done = False
     total_reward = 0
     obs = env.reset()
