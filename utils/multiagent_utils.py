@@ -68,7 +68,7 @@ def create_multi_agent_env(env, side, log_dir='./temp', num_envs=8, set_model=Fa
 
 
 def ppo2_multi_agent_train(policy, policy_name, env_id='futbol-v1', env_n=8, time_step=10 ** 5, num_turn=10,
-                           save_dir_prefix='./training/logs', verbose=0):
+                           save_dir_prefix='./training/logs', log_dir_prefix='./training/tmp', verbose=0):
     """
     :param policy: stable-baseline policy
     :param policy_name: string of policy name
@@ -77,11 +77,12 @@ def ppo2_multi_agent_train(policy, policy_name, env_id='futbol-v1', env_n=8, tim
     :param time_step: time step for one step of multi agent training
     :param num_turn: number of time to turn
     :param save_dir_prefix: prefix of directory to save trained model and best model
+    :param log_dir_prefix: prefix of log directory
     :param verbose: PPO2 training verbose or not
     :return: (PPO2, PPO2, str)the 2 trained ppo2 model, and the save directory
     """
     time_str = "{}".format(int(time.time()))
-    log_dir = "./training/tmp/" + policy_name + 'multi-agent-' + time_str
+    log_dir = log_dir_prefix + "/" + policy_name + '-multi-agent-' + time_str
     os.makedirs(log_dir, exist_ok=True)
 
     # initial left env & model, with no model set
