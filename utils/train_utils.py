@@ -40,14 +40,15 @@ def create_custom_policy(net_arch):
     return CustomPolicy
 
 
-def create_n_env(env_id, log_dir='./temp', num_envs=8):
+def create_n_env(env, log_dir='./temp', num_envs=8):
     """
-    :param env_id: 'futbol-v1'
+    :param env: (str or gym.env) if env is string use gym.make() else directly use env
     :param log_dir: log directory
     :param num_envs: number of environment
     :return: DummyVecEnv for training
     """
-    env = gym.make(env_id)
+    if isinstance(env, str):
+        env = gym.make(env)
     env = Monitor(env, log_dir, allow_early_resets=True)
     env = DummyVecEnv([lambda: env] * num_envs)
     return env
