@@ -70,8 +70,8 @@ def record_gif(env_id, model, video_length=300, prefix='env', video_folder='vide
 
 
 def get_title_str(env, total_reward, reward, n_player, action):
-    title_str = "total reward : " + '{:6.1f}'.format(total_reward)
-    title_str += "\ncurrent reward : " + '{:4.1f}'.format(reward)
+    title_str = "total reward : " + '{:7.2f}'.format(total_reward)
+    title_str += "\ncurrent reward : " + '{:5.2f}'.format(reward)
     title_str += "\ncurrent time : " + '{:4.1f}'.format(env.current_time)
     title_str += "\n" + env.get_score()
 
