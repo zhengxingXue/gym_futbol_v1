@@ -138,16 +138,10 @@ def setup_walls(space, width, height, goal_size):
             (width, 0), (width, height / 2 - goal_size / 2), 1),
         pymunk.Segment(
             space.static_body,
+            (0, 0), (width, 0), 1),
+        pymunk.Segment(
+            space.static_body,
             (width, height / 2 + goal_size / 2), (width, height), 1),
-        pymunk.Segment(
-            space.static_body,
-            (0, 0), (width, 0), 1)
-    ]
-
-    static_goal = [
-        pymunk.Segment(
-            space.static_body,
-            (-2, height / 2 - goal_size / 2), (-2, height / 2 + goal_size / 2), 1),
         pymunk.Segment(
             space.static_body,
             (-2, height / 2 - goal_size / 2), (0, height / 2 - goal_size / 2), 1),
@@ -156,13 +150,19 @@ def setup_walls(space, width, height, goal_size):
             (-2, height / 2 + goal_size / 2), (0, height / 2 + goal_size / 2), 1),
         pymunk.Segment(
             space.static_body,
-            (width + 2, height / 2 - goal_size / 2), (width + 2, height / 2 + goal_size / 2), 1),
-        pymunk.Segment(
-            space.static_body,
             (width, height / 2 - goal_size / 2), (width + 2, height / 2 - goal_size / 2), 1),
         pymunk.Segment(
             space.static_body,
             (width, height / 2 + goal_size / 2), (width + 2, height / 2 + goal_size / 2), 1)
+    ]
+
+    static_goal = [
+        pymunk.Segment(
+            space.static_body,
+            (-2, height / 2 - goal_size / 2), (-2, height / 2 + goal_size / 2), 1),
+        pymunk.Segment(
+            space.static_body,
+            (width + 2, height / 2 - goal_size / 2), (width + 2, height / 2 + goal_size / 2), 1)
     ]
 
     for s in static + static_goal:
