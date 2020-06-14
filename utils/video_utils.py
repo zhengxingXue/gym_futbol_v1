@@ -180,15 +180,19 @@ def notebook_render_simple(env, length=300, random=True, action=np.array([0, 0, 
     return total_reward
 
 
-def notebook_render_mlp(env_id, model, length=300, side=Side.left):
+def notebook_render_mlp(env_id, model, length=300, side=Side.left, env=None):
     """
     :param env_id: environment id
     :param model: model for rendering
     :param length: render length
     :param side: action side
+    :param env: if env is specified, use env
     :return: total reward
     """
-    env = gym.make(env_id)
+    if env is None:
+        env = gym.make(env_id)
+    else:
+        env = env
     done = False
     total_reward = 0
     obs = env.reset()
@@ -206,15 +210,19 @@ def notebook_render_mlp(env_id, model, length=300, side=Side.left):
     return total_reward
 
 
-def notebook_render_lstm(env_id, model, length=300, side=Side.left):
+def notebook_render_lstm(env_id, model, length=300, side=Side.left, env=None):
     """
     :param env_id: environment id
     :param model: model for rendering
     :param length: render length
     :param side: action side
+    :param env: if env is specified, use env
     :return: total reward
     """
-    env = gym.make(env_id)
+    if env is None:
+        env = gym.make(env_id)
+    else:
+        env = env
     done = False
     total_reward = 0
     obs = env.reset()
