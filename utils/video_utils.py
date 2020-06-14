@@ -69,11 +69,12 @@ def record_gif(env_id, model, video_length=300, prefix='env', video_folder='vide
     imageio.mimsave(video_folder + prefix + '.gif', [np.array(img) for img in images], fps=fps)
 
 
-def get_title_str(env, total_reward, reward, n_player, action):
-    title_str = "total reward : " + '{:7.2f}'.format(total_reward)
+def get_title_str(env, total_reward, reward, n_player, action, side):
+    title_str = env.get_score()
+    title_str += "\nTeam Left" if side == Side.left else "\nTeam Right"
+    title_str += "\ntotal reward : " + '{:7.2f}'.format(total_reward)
     title_str += "\ncurrent reward : " + '{:5.2f}'.format(reward)
     title_str += "\ncurrent time : " + '{:4.1f}'.format(env.current_time)
-    title_str += "\n" + env.get_score()
 
     for i in range(n_player):
         title_str += "\nplayer " + str(i) + " action : " + '{:6}'.format(action_key_string(
@@ -82,7 +83,7 @@ def get_title_str(env, total_reward, reward, n_player, action):
     return title_str
 
 
-def render_helper(env, action, total_reward, reward):
+def render_helper(env, action, total_reward, reward, side):
     # plot the current state
     padding = 5
     fig = plt.figure()
@@ -94,7 +95,7 @@ def render_helper(env, action, total_reward, reward):
     env.space.debug_draw(o)
 
     total_reward += reward
-    title_str = get_title_str(env, total_reward, reward, env.number_of_player, action)
+    title_str = get_title_str(env, total_reward, reward, env.number_of_player, action, side)
     plt.title(title_str, loc='left')
     plt.axis('off')
     plt.tight_layout()
@@ -144,9 +145,9 @@ def record_video_with_title(env_id, model, prefix='test', video_folder='videos/'
     out.release()
 
 
-def notebook_render_helper(env, total_reward, reward, action):
+def notebook_render_helper(env, total_reward, reward, action, side):
     plt.clf()
-    title_str = get_title_str(env, total_reward, reward, env.number_of_player, action)
+    title_str = get_title_str(env, total_reward, reward, env.number_of_player, action, side)
     padding = 5
     ax = plt.axes(xlim=(0 - padding, env.WIDTH + padding), ylim=(0 - padding, env.HEIGHT + padding))
     ax.set_aspect("equal")
@@ -175,7 +176,7 @@ def notebook_render_simple(env, length=300, random=True, action=np.array([0, 0, 
         ob, reward, _, _ = env.step(action, team_side=side)
         total_reward += reward
 
-        notebook_render_helper(env, total_reward, reward, action)
+        notebook_render_helper(env, total_reward, reward, action, side)
 
     return total_reward
 
@@ -202,7 +203,7 @@ def notebook_render_mlp(env_id, model, length=300, side=Side.left, env=None):
         ob, reward, _, _ = env.step(action, team_side=side)
         total_reward += reward
 
-        notebook_render_helper(env, total_reward, reward, action)
+        notebook_render_helper(env, total_reward, reward, action, side)
 
         i += 1
         if i > length:
@@ -235,7 +236,7 @@ def notebook_render_lstm(env_id, model, length=300, side=Side.left, env=None):
         obs, reward, done, info = env.step(action, team_side=side)
 
         total_reward += reward
-        notebook_render_helper(env, total_reward, reward, action)
+        notebook_render_helper(env, total_reward, reward, action, side)
 
         i += 1
         if i > length:
