@@ -71,7 +71,7 @@ def create_eval_callback(env_id, save_dir='./logs', eval_freq=1000, n_eval_episo
 
 
 def ppo2_train(policy, policy_name, env_id='futbol-v1', env_n=8, time_step=10**5, save_dir_prefix='./training/logs',
-               enable_call_back=True):
+               enable_call_back=True, verbose=1):
     """
     :param policy: stable-baseline policy
     :param policy_name: string of policy name
@@ -80,6 +80,7 @@ def ppo2_train(policy, policy_name, env_id='futbol-v1', env_n=8, time_step=10**5
     :param time_step: total time step for training
     :param save_dir_prefix: prefix of directory to save trained model and best model
     :param enable_call_back: whether to use the eval call back
+    :param verbose: whether to show training info
     :return: (PPO2, str)the trained ppo2 model, and the save directory
     """
     time_str = "{}".format(int(time.time()))
@@ -90,7 +91,7 @@ def ppo2_train(policy, policy_name, env_id='futbol-v1', env_n=8, time_step=10**5
     save_dir = save_dir_prefix + '/' + policy_name + '-' + time_str
     os.makedirs(save_dir, exist_ok=True)
 
-    model = PPO2(policy, env, verbose=1)
+    model = PPO2(policy, env, verbose=verbose)
     if enable_call_back:
         eval_callback = create_eval_callback(env_id, save_dir=save_dir)
         model.learn(total_timesteps=time_step, callback=eval_callback)
