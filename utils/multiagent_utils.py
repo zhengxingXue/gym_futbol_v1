@@ -200,17 +200,18 @@ class MultiAgentTrain:
             if set_model:
                 self.model_right.set_env(self.env_right)
 
-    def train(self, num_turn=10, time_step=10 ** 4, save=True, verbose=0):
+    def train(self, num_turn=10, time_step=10 ** 4, save=True, save_interval=1, verbose=0):
         self.change_verbose(verbose)
         current_turn = self.turn
         for i in range(num_turn):
+            current_save = save and i % save_interval == 0
             model_path = self.save_dir + '/' + self.policy_name + '-' + str(i+current_turn)
 
             model_left_path = model_path + '-left'
-            self.train_left(time_step=time_step, save=save, save_path=model_left_path, random_right=False)
+            self.train_left(time_step=time_step, save=current_save, save_path=model_left_path, random_right=False)
 
             model_right_path = model_path + '-right'
-            self.train_right(time_step=time_step, save=save, save_path=model_right_path, random_left=False)
+            self.train_right(time_step=time_step, save=current_save, save_path=model_right_path, random_left=False)
 
             self.turn += 1
 
@@ -261,3 +262,9 @@ class MultiAgentTrain:
     def save_models(self):
         self.model_left.save(self.save_dir + '/' + self.policy_name + '-left')
         self.model_right.save(self.save_dir + '/' + self.policy_name + '-right')
+        print("Models saved to " + self.save_dir)
+
+    def load_models(self, prefix):
+        self.model_left.load(prefix + '-left')
+        self.model_right.load(prefix + '-right')
+        print("Models loaded")
