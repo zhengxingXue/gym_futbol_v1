@@ -111,7 +111,12 @@ class NormalizeObservationWrapper(gym.Wrapper):
     :param env: (gym.Env) Gym environment that will be wrapped
     """
 
-    def __init__(self, env):
+    def __init__(self, env, reward_scale=1):
+        """
+        :param env: env to wrap
+        :param reward_scale: used to scale reward
+        """
+        self.reward_scale = reward_scale
         env.observation_space = spaces.Box(
             low=np.array([-1., -1., -1., -1.] *
                          (1 + env.number_of_player * 2), dtype=np.float32),
@@ -153,7 +158,7 @@ class NormalizeObservationWrapper(gym.Wrapper):
         """
         obs, reward, done, info = self.env.step(action, team_side)
         obs = (obs - self.avg_arr) / self.range_arr
-        # reward /= 1000
+        reward *= self.reward_scale
         return obs, reward, done, info
 
 
