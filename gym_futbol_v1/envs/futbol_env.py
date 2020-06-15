@@ -163,6 +163,7 @@ class Futbol(gym.Env):
             return img
 
     def step(self, team_action, team_side=Side.left):
+        # TODO: Fix ball out side the walls
         # left = team_left
         # right = team_right
         # need further modification
