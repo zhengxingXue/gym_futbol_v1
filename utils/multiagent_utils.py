@@ -3,7 +3,7 @@ import time
 from stable_baselines import PPO2
 from stable_baselines.bench import Monitor
 from stable_baselines.common.vec_env import DummyVecEnv
-from stable_baselines.common.policies import MlpPolicy
+from stable_baselines.common.policies import MlpPolicy, MlpLstmPolicy
 import gym
 from gym_futbol_v1.envs import Side
 from utils import notebook_render_mlp, notebook_render_lstm
@@ -145,6 +145,10 @@ class MultiAgentTrain:
         self.total_time_step = 0
         self.left_time_step = 0
         self.right_time_step = 0
+        if policy == MlpLstmPolicy:
+            self.notebook_render_fun = notebook_render_lstm
+        else:
+            self.notebook_render_fun = notebook_render_mlp
 
     def get_info(self):
         print('Training Turn : {}'.format(self.turn))
@@ -244,20 +248,20 @@ class MultiAgentTrain:
     def notebook_render_left(self, random_right=False):
         if random_right:
             self.env_left = gym.make(self.env_id)
-            notebook_render_mlp(self.env_left, self.model_left, side=Side.left)
+            self.notebook_render_fun(self.env_left, self.model_left, side=Side.left)
         else:
             self.env_left = MultiAgentWrapper(gym.make(self.env_id), Side.left)
             self.env_left.set_agent(self.model_right, Side.right)
-            _ = notebook_render_mlp(self.env_left, self.model_left, length=300, side=Side.left)
+            _ = self.notebook_render_fun(self.env_left, self.model_left, length=300, side=Side.left)
 
     def notebook_render_right(self, random_left=False):
         if random_left:
             self.env_right = gym.make(self.env_id)
-            notebook_render_mlp(self.env_right, self.model_right, side=Side.right)
+            self.notebook_render_fun(self.env_right, self.model_right, side=Side.right)
         else:
             self.env_right = MultiAgentWrapper(gym.make(self.env_id), Side.right)
             self.env_right.set_agent(self.model_left, Side.left)
-            _ = notebook_render_mlp(self.env_right, self.model_right, length=300, side=Side.right)
+            _ = self.notebook_render_fun(self.env_right, self.model_right, length=300, side=Side.right)
 
     def save_models(self):
         self.model_left.save(self.save_dir + '/' + self.policy_name + '-left')

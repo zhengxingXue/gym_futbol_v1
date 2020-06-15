@@ -66,6 +66,8 @@ def process_action(self, player, action):
     else:
         print("invalid arrow keys")
 
+    # TODO: add rotation
+
     # Action keys
     # noop [0]
     if action[1] == 0:
