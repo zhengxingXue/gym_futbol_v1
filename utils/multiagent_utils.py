@@ -242,7 +242,8 @@ class MultiAgentTrain:
 
     def notebook_render_left(self, random_right=False):
         if random_right:
-            notebook_render_mlp(self.env_id, self.model_left, side=Side.left)
+            self.env_left = gym.make(self.env_id)
+            notebook_render_mlp(self.env_left, self.model_left, side=Side.left)
         else:
             self.env_left = MultiAgentWrapper(gym.make(self.env_id), Side.left)
             self.env_left.set_agent(self.model_right, Side.right)
@@ -250,7 +251,8 @@ class MultiAgentTrain:
 
     def notebook_render_right(self, random_left=False):
         if random_left:
-            notebook_render_mlp(self.env_id, self.model_right, side=Side.right)
+            self.env_right = gym.make(self.env_id)
+            notebook_render_mlp(self.env_right, self.model_right, side=Side.right)
         else:
             self.env_right = MultiAgentWrapper(gym.make(self.env_id), Side.right)
             self.env_right.set_agent(self.model_left, Side.left)
