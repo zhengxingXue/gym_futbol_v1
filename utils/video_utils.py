@@ -160,13 +160,15 @@ def notebook_render_helper(env, total_reward, reward, action, side):
 
 def notebook_render_simple(env, length=300, random=True, action=np.array([0, 0, 0, 0]), side=Side.left):
     """
-    :param env: environment
+    :param env: (str or gym.env) if env is string use gym.make() else directly use env
     :param length: render length
     :param random: whether the side act randomly
     :param action: if the random is false, the action user want the side to act
     :param side: action side
     :return: total reward
     """
+    if isinstance(env, str):
+        env = gym.make(env)
     total_reward = 0
     for _ in range(length):
         if random:
