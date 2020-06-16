@@ -12,6 +12,7 @@ import numpy as np
 class Side(enum.Enum):
     left = 'left'
     right = 'right'
+    NoSide = 'NoSide'
 
 
 class Object:
@@ -89,7 +90,8 @@ class Ball(Object):
     def __init__(self, space, x, y, mass=10, radius=1, max_velocity=20,
                  elasticity=0.2, color=(0, 1, 0, 1)):
         super().__init__(space, x, y, mass, radius, max_velocity, elasticity, color)
-        self.owner_side = Side("left")
+        self.owner_side = Side.left
+        # TODO: add noside and last_owner_side
 
     def has_contact_with(self, player):
         """
@@ -138,22 +140,10 @@ def setup_walls(space, width, height, goal_size):
             (width, 0), (width, height / 2 - goal_size / 2), 1),
         pymunk.Segment(
             space.static_body,
-            (0, 0), (width, 0), 1),
-        pymunk.Segment(
-            space.static_body,
             (width, height / 2 + goal_size / 2), (width, height), 1),
         pymunk.Segment(
             space.static_body,
-            (-2, height / 2 - goal_size / 2), (0, height / 2 - goal_size / 2), 1),
-        pymunk.Segment(
-            space.static_body,
-            (-2, height / 2 + goal_size / 2), (0, height / 2 + goal_size / 2), 1),
-        pymunk.Segment(
-            space.static_body,
-            (width, height / 2 - goal_size / 2), (width + 2, height / 2 - goal_size / 2), 1),
-        pymunk.Segment(
-            space.static_body,
-            (width, height / 2 + goal_size / 2), (width + 2, height / 2 + goal_size / 2), 1)
+            (0, 0), (width, 0), 1)
     ]
 
     static_goal = [
@@ -162,7 +152,19 @@ def setup_walls(space, width, height, goal_size):
             (-2, height / 2 - goal_size / 2), (-2, height / 2 + goal_size / 2), 1),
         pymunk.Segment(
             space.static_body,
-            (width + 2, height / 2 - goal_size / 2), (width + 2, height / 2 + goal_size / 2), 1)
+            (-2, height / 2 - goal_size / 2), (0, height / 2 - goal_size / 2), 1),
+        pymunk.Segment(
+            space.static_body,
+            (-2, height / 2 + goal_size / 2), (0, height / 2 + goal_size / 2), 1),
+        pymunk.Segment(
+            space.static_body,
+            (width + 2, height / 2 - goal_size / 2), (width + 2, height / 2 + goal_size / 2), 1),
+        pymunk.Segment(
+            space.static_body,
+            (width, height / 2 - goal_size / 2), (width + 2, height / 2 - goal_size / 2), 1),
+        pymunk.Segment(
+            space.static_body,
+            (width, height / 2 + goal_size / 2), (width + 2, height / 2 + goal_size / 2), 1)
     ]
 
     for s in static + static_goal:
@@ -218,7 +220,26 @@ def ball_contact_goal(ball, static_goal):
     return goal
 
 
+def ball_outside_wall(ball, width, height, goal_size):
+    """return whether the ball is outside the wall"""
+    bx, by = ball.get_position()
+    if 0 < by < height:
+        if height / 2 - goal_size / 2 <= by <= height / 2 + goal_size / 2:
+            if bx <= -2 or bx >= width + 2:
+                return True
+            else:
+                return False
+        else:
+            if bx <= 0 or bx >= width:
+                return True
+            else:
+                return False
+    else:
+        return True
+
+
 def check_and_fix_out_bounds(ball, static, team_A, team_B):
+    # TODO: Fix Out bug
     """
     check if the ball contact the walls.
     if contact: change ball owner, fix, and return true
