@@ -185,13 +185,18 @@ class Futbol(gym.Env):
 
         action_arr = np.concatenate((left_player_action, right_player_action)).reshape((-1, 2))
 
+        ball_has_contact = False
         for player, action in zip(self.player_arr, action_arr):
             process_action(self, player, action)
             # change ball owner if any contact
             if self.ball.has_contact_with(player):
-                self.ball.owner_side = player.side
+                self.ball.change_owner_side(player.side)
+                ball_has_contact = True
             else:
                 pass
+
+        if not ball_has_contact:
+            self.ball.change_owner_side(Side.NoSide)
 
         # fix the out of bound situation
         out = check_and_fix_out_bounds(self.ball, self.static, self.team_left, self.team_right)
@@ -242,6 +247,10 @@ class Futbol(gym.Env):
         self.team_left.set_position_to_initial()
         self.team_right.set_position_to_initial()
         self.ball.set_position(self.WIDTH * 0.5, self.HEIGHT * 0.5)
+
+        # owner side reset
+        self.ball.owner_side = Side.NoSide
+        self.ball.last_owner_side = Side.NoSide
 
         # set the ball velocity to zero
         self.ball.body.velocity = 0, 0

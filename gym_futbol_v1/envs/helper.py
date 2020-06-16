@@ -91,7 +91,7 @@ class Ball(Object):
                  elasticity=0.2, color=(0, 1, 0, 1)):
         super().__init__(space, x, y, mass, radius, max_velocity, elasticity, color)
         self.owner_side = Side.left
-        # TODO: add noside and last_owner_side
+        self.last_owner_side = Side.NoSide
 
     def has_contact_with(self, player):
         """
@@ -102,14 +102,13 @@ class Ball(Object):
     def apply_force_to_ball(self, fx, fy):
         self.apply_force_to_object(fx, fy)
 
-    def change_owner_side(self):
+    def change_owner_side(self, side):
         """
         change the owner side to the opposite team of the current team.
         """
-        if self.owner_side == Side.left:
-            self.owner_side = Side.right
-        else:
-            self.owner_side = Side.left
+        if side is not Side.NoSide:
+            self.last_owner_side = self.owner_side
+        self.owner_side = side
 
 
 def get_vec(coor_t, coor_o):
@@ -262,7 +261,11 @@ def check_and_fix_out_bounds(ball, static, team_A, team_B):
         ball.set_position(bx + dbx, by + dby)
         ball.body.velocity = 0, 0
 
-        ball.change_owner_side()
+        last_owner_side = ball.last_owner_side
+
+        new_owner_side = Side.left if last_owner_side == Side.right else Side.right
+
+        ball.change_owner_side(new_owner_side)
 
         if ball.owner_side == team_B.side:
             get_ball_player = random.choice(team_B.player_array)

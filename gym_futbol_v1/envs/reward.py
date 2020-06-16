@@ -58,3 +58,5 @@ class Reward:
             return reward
         else:
             return -reward
+
+    # TODO: add contact ball reward

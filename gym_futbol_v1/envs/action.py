@@ -85,9 +85,9 @@ def process_action(self, player, action):
     # shoot [2]
     elif action[1] == 2:
         if self.ball.has_contact_with(player):
-            if player.side == Side("left"):
+            if player.side == Side.left:
                 goal = [self.WIDTH, self.HEIGHT/2]
-            elif player.side == Side("right"):
+            elif player.side == Side.right:
                 goal = [0, self.HEIGHT/2]
             else:
                 print("invalid side")
@@ -104,7 +104,7 @@ def process_action(self, player, action):
             # decrease the velocity influence on shoot
             self.ball.body.velocity /= 2
 
-            self.ball_owner_side = player.side
+            self.ball.change_owner_side(player.side)
             self.ball.apply_force_to_ball(ball_force_x, ball_force_y)
         else:
             pass
@@ -156,7 +156,7 @@ def process_action(self, player, action):
             # decrease the velocity influence on pass
             self.ball.body.velocity /= 10
 
-            self.ball_owner_side = player.side
+            self.ball.change_owner_side(player.side)
             self.ball.apply_force_to_ball(ball_force_x, ball_force_y)
         # cannot pass ball without ball
         else:
