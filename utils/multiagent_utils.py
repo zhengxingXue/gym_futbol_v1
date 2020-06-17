@@ -17,6 +17,7 @@ class MultiAgentWrapper(gym.Wrapper):
     def __init__(self, env, side=Side.left):
         # action side
         self.side = side
+        self.opponent_state=None
         # Call the parent constructor, so we can access self.env later
         super(MultiAgentWrapper, self).__init__(env)
 
@@ -30,10 +31,11 @@ class MultiAgentWrapper(gym.Wrapper):
     def step(self, action, team_side=None):
         """
         :param action: ([float] or int) Action taken by the agent
-        :param team_side: used to be compatibal with written function
-        :return: (np.ndarray, float, bool, dict) observation, reward, is the episode over?, additional informations
+        :param team_side: used to be compatible with written function
+        :return: (np.ndarray, float, bool, dict) observation, reward, is the episode over?, additional information
         """
-        obs, reward, done, info = self.env.step(action, self.side)
+        obs, reward, done, info = self.env.step(action, self.side, opponent_state=self.opponent_state)
+        self.opponent_state = info['opponent state']
         return obs, reward, done, info
 
     def set_agent(self, model, team_side):

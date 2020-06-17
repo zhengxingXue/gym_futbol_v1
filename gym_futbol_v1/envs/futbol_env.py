@@ -163,26 +163,34 @@ class Futbol(gym.Env):
             plt.close()
             return img
 
-    def step(self, team_action, team_side=Side.left):
+    def step(self, team_action, team_side=Side.left, opponent_state=None):
         # TODO: Fix ball out side the walls
+        done = False
+        reward = 0
+
         # left = team_left
         # right = team_right
         # need further modification
         if team_side == Side.left:
             left_player_action = team_action
             team = self.team_left
-            right_player_action, _ = self.team_right_agent.predict(self.observation)
+            n_env = self.team_right_agent.n_envs
+            stacked_obs = np.tile(self.observation, (n_env, 1))
+            right_player_action, opponent_state = self.team_right_agent.predict(stacked_obs, state=opponent_state)
+            right_player_action = right_player_action[0]
         else:
             right_player_action = team_action
             team = self.team_right
-            left_player_action, _ = self.team_left_agent.predict(self.observation)
+            n_env = self.team_left_agent.n_envs
+            stacked_obs = np.tile(self.observation, (n_env, 1))
+            left_player_action, opponent_state = self.team_left_agent.predict(stacked_obs, state=opponent_state)
+            left_player_action = left_player_action[0]
+
+        info = {'opponent state': opponent_state}
 
         init_distance_arr = self.reward_class.ball_to_team_distance_arr(team)
 
         ball_init = self.ball.get_position()
-
-        done = False
-        reward = 0
 
         action_arr = np.concatenate((left_player_action, right_player_action)).reshape((-1, 2))
 
@@ -232,7 +240,7 @@ class Futbol(gym.Env):
         if self.current_time >= self.TOTAL_TIME:
             done = True
 
-        return self.observation, reward, done, {}
+        return self.observation, reward, done, info
 
     def _get_observation(self):
         """get observation"""
