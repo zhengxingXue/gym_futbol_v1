@@ -238,7 +238,7 @@ def ball_outside_wall(ball, width, height, goal_size):
 
 
 def check_and_fix_out_bounds(ball, static, team_A, team_B):
-    # TODO: Fix Out bug
+    # TODO: Fix bug
     """
     check if the ball contact the walls.
     if contact: change ball owner, fix, and return true

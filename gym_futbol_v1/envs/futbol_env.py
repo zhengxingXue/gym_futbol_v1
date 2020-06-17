@@ -146,6 +146,7 @@ class Futbol(gym.Env):
                       ylim=(0 - padding, self.HEIGHT + padding))
         ax.set_aspect("equal")
         o = pymunk.matplotlib_util.DrawOptions(ax)
+        # TODO: Label player
         self.space.debug_draw(o)
         if mode == 'human':
             plt.show()
@@ -206,6 +207,7 @@ class Futbol(gym.Env):
         self.observation = self._get_observation()
 
         # get reward
+        reward += self.reward_class.get_contact_ball_reward(side=team_side)
         if not out:
             ball_after = self.ball.get_position()
 
@@ -227,7 +229,7 @@ class Futbol(gym.Env):
 
         self.current_time += self.TIME_STEP
 
-        if self.current_time > self.TOTAL_TIME:
+        if self.current_time >= self.TOTAL_TIME:
             done = True
 
         return self.observation, reward, done, {}

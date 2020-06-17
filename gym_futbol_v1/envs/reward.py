@@ -5,10 +5,11 @@ from gym_futbol_v1.envs.helper import Side, get_vec
 
 class Reward:
     def __init__(self, env, run_to_ball_reward_coefficient=10,
-                 ball_to_goal_reward_coefficient=10, goal_reward=1000):
+                 ball_to_goal_reward_coefficient=10, goal_reward=1000, contact_ball_reward=1):
         self.run_to_ball_reward_coefficient = run_to_ball_reward_coefficient
         self.ball_to_goal_reward_coefficient = ball_to_goal_reward_coefficient
         self.goal_reward = goal_reward
+        self.contact_ball_reward = contact_ball_reward
         self.env = env
 
     def get_ball_to_goal_reward(self, side, ball_init, ball_after):
@@ -59,4 +60,10 @@ class Reward:
         else:
             return -reward
 
-    # TODO: add contact ball reward
+    def get_contact_ball_reward(self, side):
+        ball_side = self.env.ball.owner_side
+        last_ball_side = self.env.ball.last_owner_side
+        if ball_side == side or (ball_side == Side.NoSide and last_ball_side == side):
+            return self.contact_ball_reward
+        else:
+            return 0
