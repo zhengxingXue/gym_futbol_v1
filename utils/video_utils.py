@@ -222,11 +222,10 @@ def notebook_render_lstm(env, model, length=300, side=Side.left):
     """
     if isinstance(env, str):
         env = gym.make(env)
-    done = False
+    done, state = False, None
     total_reward = 0
     obs = env.reset()
     n_env = model.n_envs
-    _, state = model.predict(np.tile(obs, (n_env, 1)), deterministic=False)
     i = 0
     while not done:
         action, state = model.predict(np.tile(obs, (n_env, 1)), state=state, deterministic=False)
