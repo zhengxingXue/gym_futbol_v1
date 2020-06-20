@@ -9,8 +9,10 @@ from utils.video_utils import show_video, record_video, record_gif, record_video
 def main(video=True, title=True):
     env = gym.make("futbol-v1")
     check_env(env, warn=True)
-    file_name = 'ppo2-futbol-10M_best_model'
-    model = PPO2.load("supplement/" + file_name)
+    file_name = 'left-ppo2-lstm-2v2-5e3'
+    model = PPO2.load("zoo/2v2/" + file_name)
+    #file_name = 'ppo2-futbol-1M_best_model'
+    #model = PPO2.load("supplement/" + file_name)
     prefix = file_name
     record_length = 300
     if video:
@@ -18,7 +20,7 @@ def main(video=True, title=True):
             record_video_with_title('futbol-v1', model, prefix=prefix)
             show_video('videos/' + prefix + '.mp4')
         else:
-            record_video('futbol-v1', model, video_length=record_length, prefix=prefix)
+            record_video('futbol-v1', model, video_length=record_length, prefix=prefix, lstm=True)
             show_video('videos/' + prefix + '-step-0-to-step-' + str(record_length) + '.mp4')
 
     else:

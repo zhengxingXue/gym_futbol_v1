@@ -139,7 +139,7 @@ class Futbol(gym.Env):
 
         return self.observation
 
-    def render(self, mode='human', axis=False, label=True, notebook=False):
+    def render(self, mode='human', axis=False, label=False, notebook=False):
         padding = 5
         if notebook:
             pass  # for notebook render
@@ -152,23 +152,23 @@ class Futbol(gym.Env):
 
         color = '0.9'
         # center line and circle
-        circle = plt.Circle((self.WIDTH/2, self.HEIGHT/2), radius=9,
+        circle = plt.Circle((self.WIDTH / 2, self.HEIGHT / 2), radius=9,
                             fill=False, color=color, linewidth=1, zorder=0)
         ax.add_artist(circle)
-        plt.plot([self.WIDTH/2, self.WIDTH/2], [0, self.HEIGHT],
+        plt.plot([self.WIDTH / 2, self.WIDTH / 2], [0, self.HEIGHT],
                  color=color, linestyle='-', linewidth=1, zorder=0)
 
         # left box
-        draw_box(0, self.HEIGHT/2, 16.5, 20, color)
-        draw_box(0, self.HEIGHT / 2, 5.5, self.GOAL_SIZE/2+2, color)
-        left_arc = patches.Arc((11, self.HEIGHT/2), 18, 18,
+        draw_box(0, self.HEIGHT / 2, 16.5, 20, color)
+        draw_box(0, self.HEIGHT / 2, 5.5, self.GOAL_SIZE / 2 + 2, color)
+        left_arc = patches.Arc((11, self.HEIGHT / 2), 18, 18,
                                angle=0, theta1=-50, theta2=50, color=color, zorder=0)
         ax.add_patch(left_arc)
 
         # right box
         draw_box(self.WIDTH, self.HEIGHT / 2, -16.5, 20, color)
         draw_box(self.WIDTH, self.HEIGHT / 2, -5.5, self.GOAL_SIZE / 2 + 2, color)
-        right_arc = patches.Arc((self.WIDTH-11, self.HEIGHT / 2), 18, 18,
+        right_arc = patches.Arc((self.WIDTH - 11, self.HEIGHT / 2), 18, 18,
                                 angle=180, theta1=-50, theta2=50, color=color, zorder=0)
         ax.add_patch(right_arc)
 
@@ -268,6 +268,11 @@ class Futbol(gym.Env):
                 self.team_left.add_score()
             else:
                 self.team_right.add_score()
+
+            # reset the player position and step a little
+            # self.observation is already set above
+            # might cause problem as the actual position of the goal frame is the initial position
+            # while the returned observation is before the initialization
             self._set_position_to_initial()
             if self.goal_end:
                 done = True
@@ -303,6 +308,8 @@ class Futbol(gym.Env):
 
         # set the ball velocity to zero
         self.ball.body.velocity = 0, 0
+
+        self.space.step(self.TIME_STEP)
 
     def get_score(self):
         """

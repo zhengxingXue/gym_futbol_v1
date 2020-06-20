@@ -31,7 +31,7 @@ def show_video(name):
     cv2.destroyAllWindows()
 
 
-def record_video(env_id, model, video_length=300, prefix='', video_folder='videos/'):
+def record_video(env_id, model, video_length=300, prefix='', video_folder='videos/', lstm=False):
     """
     :param env_id: (str)
     :param model: (RL model)
@@ -46,22 +46,26 @@ def record_video(env_id, model, video_length=300, prefix='', video_folder='video
                                 name_prefix=prefix)
 
     obs = eval_env.reset()
+    state = None
     for _ in range(video_length):
-        action, _ = model.predict(obs)
+        action, state = model.predict(np.tile(obs, (model.n_envs, 1)), state=state, deterministic=False)
+        action = action[[0]] if lstm else action[0]
         obs, _, _, _ = eval_env.step(action)
 
     # Close the video recorder
     eval_env.close()
 
 
-def record_gif(env_id, model, video_length=300, prefix='env', video_folder='videos/'):
+def record_gif(env_id, model, video_length=300, prefix='env', video_folder='videos/', lstm=False):
     images = []
     env = gym.make(env_id)
     obs = env.reset()
     img = env.render(mode='rgb_array')
+    state = None
     for _ in range(video_length):
         images.append(img)
-        action, _ = model.predict(obs)
+        action, state = model.predict(np.tile(obs, (model.n_envs, 1)), state=state, deterministic=False)
+        action = action[[0]] if lstm else action[0]
         obs, _, _, _ = env.step(action)
         img = env.render(mode='rgb_array')
 
@@ -126,12 +130,13 @@ def record_video_with_title(env_id, model, prefix='test', video_folder='videos/'
     fps = env.metadata['video.frames_per_second']
     video_filename = video_folder + '/' + prefix + '.mp4'
     out = cv2.VideoWriter(video_filename, fourcc, fps, (width, height))
-    done = False
+    done, state = False, None
     total_reward = 0
 
     while not done:
         # for _ in range(50):
-        action, _ = model.predict(obs)
+        action, state = model.predict(np.tile(obs, (model.n_envs, 1)), state=state, deterministic=False)
+        action = action[0]
         obs, reward, done, _ = env.step(action)
 
         img, total_reward = render_helper(env, action, total_reward, reward, Side.left, label=label)
