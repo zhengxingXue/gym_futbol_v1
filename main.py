@@ -6,13 +6,13 @@ from stable_baselines.common.env_checker import check_env
 from utils.video_utils import show_video, record_video, record_gif, record_video_with_title
 
 
-def main(video=True, title=True):
+def main(video=True, title=False):
     env = gym.make("futbol-v1")
     check_env(env, warn=True)
     file_name = 'left-ppo2-lstm-2v2-5e3'
     model = PPO2.load("zoo/2v2/" + file_name)
-    #file_name = 'ppo2-futbol-1M_best_model'
-    #model = PPO2.load("supplement/" + file_name)
+    # file_name = 'ppo2-futbol-10M_best_model'
+    # model = PPO2.load("supplement/" + file_name)
     prefix = file_name
     record_length = 300
     if video:

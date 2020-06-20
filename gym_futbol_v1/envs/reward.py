@@ -63,7 +63,9 @@ class Reward:
     def get_contact_ball_reward(self, side):
         ball_side = self.env.ball.owner_side
         last_ball_side = self.env.ball.last_owner_side
-        if ball_side == side or (ball_side == Side.NoSide and last_ball_side == side):
+        if ball_side == side:
             return self.contact_ball_reward
+        elif ball_side == Side.NoSide and last_ball_side == side:
+            return self.contact_ball_reward / 2
         else:
             return 0
