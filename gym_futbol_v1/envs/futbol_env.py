@@ -9,8 +9,9 @@ import numpy as np
 import pymunk
 import pymunk.matplotlib_util
 import matplotlib.pyplot as plt
+from matplotlib import patches
 from gym_futbol_v1.envs.team import Team
-from gym_futbol_v1.envs.helper import setup_walls, Ball, check_and_fix_out_bounds, ball_contact_goal
+from gym_futbol_v1.envs.helper import setup_walls, Ball, check_and_fix_out_bounds, ball_contact_goal, draw_box
 from gym_futbol_v1.envs.action import process_action
 from gym_futbol_v1.envs import Reward, Side, BaseAgent
 
@@ -37,9 +38,9 @@ class Futbol(gym.Env):
         'video.frames_per_second': 10
     }
 
-    WIDTH = 105  # [m]
-    HEIGHT = 68  # [m]
-    GOAL_SIZE = 20  # [m]
+    WIDTH = 120  # [m]
+    HEIGHT = 81  # [m]
+    GOAL_SIZE = 16  # [m]
 
     TOTAL_TIME = 30  # [s]
     TIME_STEP = 0.1  # [s]
@@ -138,20 +139,58 @@ class Futbol(gym.Env):
 
         return self.observation
 
-    def render(self, mode='human'):
+    def render(self, mode='human', axis=False, label=True, notebook=False):
         padding = 5
-        fig = plt.figure()
-        ax = fig.add_subplot()
+        if notebook:
+            pass  # for notebook render
+        else:
+            fig = plt.figure()
+            ax = fig.add_subplot()
         ax = plt.axes(xlim=(0 - padding, self.WIDTH + padding),
                       ylim=(0 - padding, self.HEIGHT + padding))
         ax.set_aspect("equal")
+
+        color = '0.9'
+        # center line and circle
+        circle = plt.Circle((self.WIDTH/2, self.HEIGHT/2), radius=9,
+                            fill=False, color=color, linewidth=1, zorder=0)
+        ax.add_artist(circle)
+        plt.plot([self.WIDTH/2, self.WIDTH/2], [0, self.HEIGHT],
+                 color=color, linestyle='-', linewidth=1, zorder=0)
+
+        # left box
+        draw_box(0, self.HEIGHT/2, 16.5, 20, color)
+        draw_box(0, self.HEIGHT / 2, 5.5, self.GOAL_SIZE/2+2, color)
+        left_arc = patches.Arc((11, self.HEIGHT/2), 18, 18,
+                               angle=0, theta1=-50, theta2=50, color=color, zorder=0)
+        ax.add_patch(left_arc)
+
+        # right box
+        draw_box(self.WIDTH, self.HEIGHT / 2, -16.5, 20, color)
+        draw_box(self.WIDTH, self.HEIGHT / 2, -5.5, self.GOAL_SIZE / 2 + 2, color)
+        right_arc = patches.Arc((self.WIDTH-11, self.HEIGHT / 2), 18, 18,
+                                angle=180, theta1=-50, theta2=50, color=color, zorder=0)
+        ax.add_patch(right_arc)
+
+        if label:
+            self.team_left.label_player()
+            self.team_right.label_player()
+
+        # draw player and ball
         o = pymunk.matplotlib_util.DrawOptions(ax)
-        # TODO: Label player
+        o.flags = pymunk.SpaceDebugDrawOptions.DRAW_SHAPES
+        o.shape_outline_color = (0, 0, 0, 0.3)
         self.space.debug_draw(o)
-        if mode == 'human':
-            plt.show()
-        elif mode == 'rgb_array':
+
+        if not axis:
             plt.axis('off')
+
+        if mode == 'human':
+            if notebook:
+                pass
+            else:
+                plt.show()
+        elif mode == 'rgb_array':
             dpi = 180
             buf = io.BytesIO()
             fig.savefig(buf, format="png", dpi=dpi)
@@ -270,3 +309,8 @@ class Futbol(gym.Env):
         :return: score string
         """
         return "Team left : Team right = " + str(self.team_left.score) + " : " + str(self.team_right.score)
+
+
+if __name__ == "__main__":
+    env = Futbol()
+    env.render()

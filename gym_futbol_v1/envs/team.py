@@ -4,6 +4,7 @@ Team Module.
 import random
 import numpy as np
 from .helper import Side, Player
+import matplotlib.pyplot as plt
 
 
 class Team:
@@ -39,6 +40,13 @@ class Team:
     def add_score(self): self.score += 1
 
     def reset_score(self): self.score = 0
+
+    def label_player(self):
+        i = 0
+        for player in self.player_array:
+            x, y = player.get_position()
+            plt.text(x, y+1.5, str(i), ha="center", va='bottom', fontsize=12)
+            i += 1
 
     # only implemented with red and blue
     def _create_color_array(self, color, player_number):

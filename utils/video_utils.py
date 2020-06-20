@@ -83,16 +83,12 @@ def get_title_str(env, total_reward, reward, n_player, action, side):
     return title_str
 
 
-def render_helper(env, action, total_reward, reward, side):
+def render_helper(env, action, total_reward, reward, side, label=True):
     # plot the current state
-    padding = 5
     fig = plt.figure()
     ax = fig.add_subplot()
-    ax = plt.axes(xlim=(0 - padding, env.WIDTH + padding),
-                  ylim=(0 - padding, env.HEIGHT + padding))
-    ax.set_aspect("equal")
-    o = pymunk.matplotlib_util.DrawOptions(ax)
-    env.space.debug_draw(o)
+
+    env.render(notebook=True, label=label)
 
     total_reward += reward
     title_str = get_title_str(env, total_reward, reward, env.number_of_player, action, side)
@@ -115,10 +111,10 @@ def render_helper(env, action, total_reward, reward, side):
     return img, total_reward
 
 
-def record_video_with_title(env_id, model, prefix='test', video_folder='videos/'):
+def record_video_with_title(env_id, model, prefix='test', video_folder='videos/', label=True):
     env = gym.make(env_id)
     obs = env.reset()
-    img, _ = render_helper(env, [0, 0] * env.number_of_player, 0, 0)
+    img, _ = render_helper(env, [0, 0] * env.number_of_player, 0, 0, Side.left, label=label)
 
     video_folder = os.path.abspath(video_folder)
     # Create output folder if needed
@@ -138,27 +134,26 @@ def record_video_with_title(env_id, model, prefix='test', video_folder='videos/'
         action, _ = model.predict(obs)
         obs, reward, done, _ = env.step(action)
 
-        img, total_reward = render_helper(env, action, total_reward, reward)
+        img, total_reward = render_helper(env, action, total_reward, reward, Side.left, label=label)
 
         out.write(img)
 
     out.release()
 
 
-def notebook_render_helper(env, total_reward, reward, action, side):
+def notebook_render_helper(env, total_reward, reward, action, side, label=True):
     plt.clf()
+
     title_str = get_title_str(env, total_reward, reward, env.number_of_player, action, side)
-    padding = 5
-    ax = plt.axes(xlim=(0 - padding, env.WIDTH + padding), ylim=(0 - padding, env.HEIGHT + padding))
-    ax.set_aspect("equal")
-    o = pymunk.matplotlib_util.DrawOptions(ax)
-    env.space.debug_draw(o)
+
+    env.render(notebook=True, label=label)
+
     plt.title(title_str, loc='left')
     display.display(plt.gcf())
     display.clear_output(wait=True)
 
 
-def notebook_render_simple(env, length=300, random=True, action=np.array([0, 0, 0, 0]), side=Side.left):
+def notebook_render_simple(env, length=300, random=True, action=np.array([0, 0, 0, 0]), side=Side.left, label=True):
     """
     :param env: (str or gym.env) if env is string use gym.make() else directly use env
     :param length: render length
@@ -178,12 +173,12 @@ def notebook_render_simple(env, length=300, random=True, action=np.array([0, 0, 
         ob, reward, _, _ = env.step(action, team_side=side)
         total_reward += reward
 
-        notebook_render_helper(env, total_reward, reward, action, side)
+        notebook_render_helper(env, total_reward, reward, action, side, label)
 
     return total_reward
 
 
-def notebook_render_mlp(env, model, length=300, side=Side.left):
+def notebook_render_mlp(env, model, length=300, side=Side.left, label=True):
     """
     :param env: (str or gym.env) if env is string use gym.make() else directly use env
     :param model: model for rendering
@@ -203,7 +198,7 @@ def notebook_render_mlp(env, model, length=300, side=Side.left):
         ob, reward, _, _ = env.step(action, team_side=side)
         total_reward += reward
 
-        notebook_render_helper(env, total_reward, reward, action, side)
+        notebook_render_helper(env, total_reward, reward, action, side, label)
 
         i += 1
         if i > length:
@@ -211,7 +206,7 @@ def notebook_render_mlp(env, model, length=300, side=Side.left):
     return total_reward
 
 
-def notebook_render_lstm(env, model, length=300, side=Side.left):
+def notebook_render_lstm(env, model, length=300, side=Side.left, label=True):
     """
     :param env: (str or gym.env) if env is string use gym.make() else directly use env
     :param model: model for rendering
@@ -233,7 +228,7 @@ def notebook_render_lstm(env, model, length=300, side=Side.left):
         obs, reward, done, info = env.step(action, team_side=side)
 
         total_reward += reward
-        notebook_render_helper(env, total_reward, reward, action, side)
+        notebook_render_helper(env, total_reward, reward, action, side, label)
 
         i += 1
         if i > length:

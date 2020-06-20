@@ -7,6 +7,7 @@ import random
 import pymunk
 from pymunk.vec2d import Vec2d
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class Side(enum.Enum):
@@ -88,7 +89,7 @@ class Ball(Object):
     """
 
     def __init__(self, space, x, y, mass=10, radius=1, max_velocity=20,
-                 elasticity=0.2, color=(0, 1, 0, 1)):
+                 elasticity=0.2, color=(0, 0.7, 0, 1)):
         super().__init__(space, x, y, mass, radius, max_velocity, elasticity, color)
         self.owner_side = Side.left
         self.last_owner_side = Side.NoSide
@@ -175,6 +176,14 @@ def setup_walls(space, width, height, goal_size):
     space.add(static_goal)
 
     return space, static, static_goal
+
+
+def draw_box(x, y, width, height, color):
+    tx = x + width
+    ty1, ty2 = y + height, y - height
+    plt.plot([x, tx], [ty1, ty1], color=color, linestyle='-', linewidth=1, zorder=0)
+    plt.plot([x, tx], [ty2, ty2], color=color, linestyle='-', linewidth=1, zorder=0)
+    plt.plot([tx, tx], [ty2, ty1], color=color, linestyle='-', linewidth=1, zorder=0)
 
 
 def normalize_array(array, array_max, array_min, n=1):
