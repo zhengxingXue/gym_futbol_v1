@@ -2,6 +2,7 @@
 Env Module.
 """
 import io
+import random
 import cv2
 import gym
 from gym import spaces
@@ -203,7 +204,6 @@ class Futbol(gym.Env):
             return img
 
     def step(self, team_action, team_side=Side.left, opponent_state=None):
-        # TODO: Fix ball out side the walls
         done = False
         reward = 0
 
@@ -225,6 +225,7 @@ class Futbol(gym.Env):
             left_player_action, opponent_state = self.team_left_agent.predict(stacked_obs, state=opponent_state)
             left_player_action = left_player_action[0]
 
+        # TODO: ADD actions to info
         info = {'opponent state': opponent_state}
 
         init_distance_arr = self.reward_class.ball_to_team_distance_arr(team)
@@ -234,7 +235,10 @@ class Futbol(gym.Env):
         action_arr = np.concatenate((left_player_action, right_player_action)).reshape((-1, 2))
 
         ball_has_contact = False
-        for player, action in zip(self.player_arr, action_arr):
+        # random shuffle the player and action pair to make the game more fair
+        player_action_list = list(zip(self.player_arr, action_arr))
+        random.shuffle(player_action_list)
+        for player, action in player_action_list:
             process_action(self, player, action)
             # change ball owner if any contact
             if self.ball.has_contact_with(player):
@@ -319,5 +323,5 @@ class Futbol(gym.Env):
 
 
 if __name__ == "__main__":
-    env = Futbol()
-    env.render()
+    env = Futbol(number_of_player=3)
+    env.render(label=True)

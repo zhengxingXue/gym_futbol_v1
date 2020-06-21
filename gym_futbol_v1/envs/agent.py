@@ -1,5 +1,4 @@
-import random
-from gym_futbol_v1.envs import Side
+import numpy as np
 
 
 class BaseAgent:
@@ -15,3 +14,11 @@ class BaseAgent:
         Return [action], next state(unimplemented)
         """
         return [self.env.action_space.sample()], None
+
+
+class SimpleAgent(BaseAgent):
+    def __init__(self, env, side):
+        super().__init__(env, side)
+
+    def predict(self, obs, state=None):
+        pass

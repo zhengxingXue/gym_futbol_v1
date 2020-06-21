@@ -2,9 +2,39 @@
 Team Module.
 """
 import random
+import enum
 import numpy as np
-from .helper import Side, Player
+from .helper import Side, Object
 import matplotlib.pyplot as plt
+
+
+class PlayerType(enum.Enum):
+    forward = 0
+    backward = 1
+
+
+class Player(Object):
+    """
+    Player Class.
+    """
+
+    def __init__(self, space, x, y, mass=20, radius=1.5, max_velocity=10,
+                 elasticity=0.2, color=(1, 0, 0, 1), side=Side.left):
+        super().__init__(space, x, y, mass, radius, max_velocity, elasticity, color)
+        self.side = side
+        self.type = PlayerType.forward
+        self.press_radius = -1
+        self.defence_position = (x, y)
+        self.offence_position = (x, y)
+
+    def apply_force_to_player(self, fx, fy):
+        self.apply_force_to_object(fx, fy)
+
+    def set_defence_position(self, x, y):
+        self.defence_position = (x, y)
+
+    def set_attack_position(self, x, y):
+        self.offence_position = (x, y)
 
 
 class Team:
@@ -48,94 +78,13 @@ class Team:
             plt.text(x, y+1.5, str(i), ha="center", va='bottom', fontsize=12)
             i += 1
 
-    # only implemented with red and blue
-    def _create_color_array(self, color, player_number):
-        if player_number == 1:
-            self.color_array = [color]
-        else:
-            green_range = 0.7
-            if color == (1, 0, 0, 1):
-                color_increment = green_range/(player_number - 1)
-                self.color_array = []
-                for i in range(player_number):
-                    self.color_array.append((1, color_increment*i, 0, 1))
-            elif color == (0, 0, 1, 1):
-                color_increment = green_range/(player_number - 1)
-                self.color_array = []
-                for i in range(player_number):
-                    self.color_array.append((0, color_increment*i, 1, 1))
-            else:
-                self.color_array = [color] * player_number
-
-    def _create_pos_array(self, player_number, side, width, height):
-        # implement for 10 players and fewer now
-        if player_number <= 3:
-            # get x position for each player
-            if side == Side.left:
-                self.x_pos_array = [width * 0.25] * player_number
-            elif side == Side.right:
-                self.x_pos_array = [width * 0.75] * player_number
-            else:
-                print("invalid side")
-            # get y position for each player
-            y_increment = height / (player_number + 1)
-            self.y_pos_array = []
-            for i in range(player_number):
-                self.y_pos_array.append(y_increment * (i+1))
-
-        elif player_number <= 6:
-            # get x position for each player
-            if side == Side.left:
-                self.x_pos_array = [width * 1/6] * 3 + \
-                    [width * 2/6] * (player_number-3)
-            elif side == Side.right:
-                self.x_pos_array = [width * 5/6] * 3 + \
-                    [width * 4/6] * (player_number-3)
-            else:
-                print("invalid side")
-            # get y position for each player
-            y_increment = height / (3 + 1)
-            self.y_pos_array = []
-            for i in range(3):
-                self.y_pos_array.append(y_increment * (i+1))
-            y_increment = height / (player_number - 3 + 1)
-            for i in range(player_number-3):
-                self.y_pos_array.append(y_increment * (i+1))
-
-        # 7 player might look wired
-        elif player_number <= 10:
-            # get x position for each player
-            if side == Side.left:
-                self.x_pos_array = [width * 1/8] * 4 + [width *
-                                                        2/8] * 3 + [width * 3/8] * (player_number-7)
-            elif side == Side.right:
-                self.x_pos_array = [width * 7/8] * 4 + [width *
-                                                        6/8] * 3 + [width * 5/8] * (player_number-7)
-            else:
-                print("invalid side")
-            # get y position for each player
-            y_increment = height / (4 + 1)
-            self.y_pos_array = []
-            for i in range(4):
-                self.y_pos_array.append(y_increment * (i+1))
-
-            y_increment = height / (3 + 1)
-            for i in range(3):
-                self.y_pos_array.append(y_increment * (i+1))
-
-            y_increment = height / (player_number - 7 + 1)
-            for i in range(player_number - 7):
-                self.y_pos_array.append(y_increment * (i+1))
-        else:
-            print("unimplemented")
-
     def set_position_to_initial(self):
         for player, x, y in zip(self.player_array, self.x_pos_array, self.y_pos_array):
             player.set_position(x, y)
             # zero velocity
             player.body.velocity = 0, 0
 
-    # return reshpaed numpy array observation
+    # return reshaped numpy array observation
     def get_observation(self):
         obs_array = []
         for player in self.player_array:
@@ -196,3 +145,85 @@ class Team:
                         pass
 
             return target_teammate[0]
+
+        # only implemented with red and blue
+
+    def _create_color_array(self, color, player_number):
+        if player_number == 1:
+            self.color_array = [color]
+        else:
+            green_range = 0.7
+            if color == (1, 0, 0, 1):
+                color_increment = green_range / (player_number - 1)
+                self.color_array = []
+                for i in range(player_number):
+                    self.color_array.append((1, color_increment * i, 0, 1))
+            elif color == (0, 0, 1, 1):
+                color_increment = green_range / (player_number - 1)
+                self.color_array = []
+                for i in range(player_number):
+                    self.color_array.append((0, color_increment * i, 1, 1))
+            else:
+                self.color_array = [color] * player_number
+
+    def _create_pos_array(self, player_number, side, width, height):
+        # implement for 10 players and fewer now
+        if player_number <= 3:
+            # get x position for each player
+            if side == Side.left:
+                self.x_pos_array = [width * 0.25] * player_number
+            elif side == Side.right:
+                self.x_pos_array = [width * 0.75] * player_number
+            else:
+                print("invalid side")
+            # get y position for each player
+            y_increment = height / (player_number + 1)
+            self.y_pos_array = []
+            for i in range(player_number):
+                self.y_pos_array.append(y_increment * (i + 1))
+
+        elif player_number <= 6:
+            # get x position for each player
+            if side == Side.left:
+                self.x_pos_array = [width * 1 / 6] * 3 + \
+                                   [width * 2 / 6] * (player_number - 3)
+            elif side == Side.right:
+                self.x_pos_array = [width * 5 / 6] * 3 + \
+                                   [width * 4 / 6] * (player_number - 3)
+            else:
+                print("invalid side")
+            # get y position for each player
+            y_increment = height / (3 + 1)
+            self.y_pos_array = []
+            for i in range(3):
+                self.y_pos_array.append(y_increment * (i + 1))
+            y_increment = height / (player_number - 3 + 1)
+            for i in range(player_number - 3):
+                self.y_pos_array.append(y_increment * (i + 1))
+
+        # 7 player might look wired
+        elif player_number <= 10:
+            # get x position for each player
+            if side == Side.left:
+                self.x_pos_array = [width * 1 / 8] * 4 + [width *
+                                                          2 / 8] * 3 + [width * 3 / 8] * (player_number - 7)
+            elif side == Side.right:
+                self.x_pos_array = [width * 7 / 8] * 4 + [width *
+                                                          6 / 8] * 3 + [width * 5 / 8] * (player_number - 7)
+            else:
+                print("invalid side")
+            # get y position for each player
+            y_increment = height / (4 + 1)
+            self.y_pos_array = []
+            for i in range(4):
+                self.y_pos_array.append(y_increment * (i + 1))
+
+            y_increment = height / (3 + 1)
+            for i in range(3):
+                self.y_pos_array.append(y_increment * (i + 1))
+
+            y_increment = height / (player_number - 7 + 1)
+            for i in range(player_number - 7):
+                self.y_pos_array.append(y_increment * (i + 1))
+        else:
+            print("unimplemented")
