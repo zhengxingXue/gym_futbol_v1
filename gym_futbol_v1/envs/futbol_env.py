@@ -120,6 +120,8 @@ class Futbol(gym.Env):
                          max_velocity=self.BALL_MAX_VELOCITY,
                          elasticity=0.2)
 
+        self.has_ball_player = None
+
         self.current_time = 0
         self.observation = self.reset()
         self.reward_class = Reward(self)
@@ -235,6 +237,7 @@ class Futbol(gym.Env):
         action_arr = np.concatenate((left_player_action, right_player_action)).reshape((-1, 2))
 
         ball_has_contact = False
+        self.has_ball_player = None
         # random shuffle the player and action pair to make the game more fair
         player_action_list = list(zip(self.player_arr, action_arr))
         random.shuffle(player_action_list)
@@ -243,6 +246,7 @@ class Futbol(gym.Env):
             # change ball owner if any contact
             if self.ball.has_contact_with(player):
                 self.ball.change_owner_side(player.side)
+                self.has_ball_player = player
                 ball_has_contact = True
             else:
                 pass
